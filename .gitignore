@@ -1,0 +1,5 @@
+# ASDM toolsets & workspace
+.asdm/
+
+# CodeBuddy commands & rules
+.codebuddy/
