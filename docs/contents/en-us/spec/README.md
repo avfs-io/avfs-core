@@ -35,13 +35,15 @@ All driver implementations and SDK bindings must conform to the specifications d
 
 ## Related
 
-- [Core](../core/README.md) — Reference implementation of this spec
-- [Plugin SDK](../plugin-sdk/README.md) — SDK for implementing custom drivers per this spec
+- [Core](../../../../core/README.md) — Reference implementation of this spec
+- [Plugin SDK](../../../../plugin-sdk/README.md) — SDK for implementing custom drivers per this spec
 - **AVFS Official Site**: https://avfs.io
 - **GitHub**: https://github.com/avfs-io
-- **License**: Apache License 2.0 ([`LICENSE`](../LICENSE))
+- **License**: Apache License 2.0 ([`LICENSE`](../../../../LICENSE))
 
-## AVFS Address Examples (This Document)
+## Other Languages
+
+- **中文版 (zh-cn)**: [../zh-cn/spec/README.md](../zh-cn/spec/README.md)
 
 Below are the same resources expressed in `avfs://` standard address format:
 

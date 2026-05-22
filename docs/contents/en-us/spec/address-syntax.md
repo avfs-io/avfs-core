@@ -10,6 +10,8 @@ avfs://<proto>/<resource-base>@<version>/<file-path>[#anchor]
 
 ### ABNF Representation
 
+> **ABNF** is a meta-language defined by [RFC 5234](https://www.rfc-editor.org/rfc/rfc5234) for formally specifying syntax rules, commonly used in IETF protocol standards.
+
 ```abnf
 avfs-address   = "avfs://" proto "/" resource-base ["@" version] "/" file-path ["#" anchor]
 proto          = 1*ALPHA / (1*ALPHA *("-" / "_" / ".") 1*ALPHA)

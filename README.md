@@ -1,9 +1,22 @@
 # AVFS (Agent Virtual File System)
+
+![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
+![Version](https://img.shields.io/badge/Version-v1.0.0-green.svg)
+![Status](https://img.shields.io/badge/Status-Active%20Development-yellow.svg)
+![GitHub Stars](https://img.shields.io/github/stars/avfs-io/avfs-core?style=social)
+![GitHub Forks](https://img.shields.io/github/forks/avfs-io/avfs-core?style=social)
+![GitHub Issues](https://img.shields.io/github/issues/avfs-io/avfs-core)
+![GitHub PRs](https://img.shields.io/github/issues-pr/avfs-io/avfs-core)
+![Contributions Welcome](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)
+![Specification](https://img.shields.io/badge/Type-Protocol%20Specification-orange.svg)
+
 **Universal Cross-Storage Addressing Protocol for AI Agents**
 Unify local disk, network service, LAN share, Git repositories into one consistent `avfs://` addressing standard.
 
 Official Site: [https://avfs.io](https://avfs.io)
 GitHub Organization: [https://github.com/avfs-io](https://github.com/avfs-io)
+
+**English** | [中文](README_CN.md)
 
 ## Overview
 AVFS is a universal virtual file system protocol designed for AI Agents.
@@ -32,6 +45,15 @@ No limitation on file format, storage vendor, network environment or deployment 
   Structured machine-readable address, easy to parse, route and automate by intelligent agents
 - **Practical CLI Tool**
   Command-line utility for quick fetch, convert, inspect and manage AVFS resources
+
+## Specification
+- [Protocol Standard (v1.0)](docs/contents/en-us/spec/avfs-v1-standard.md) - Complete AVFS protocol specification
+- [Address Syntax](docs/contents/en-us/spec/address-syntax.md) - Address format grammar & ABNF definition
+- [Driver Interface](docs/contents/en-us/spec/driver-interface.md) - Plugin interface contract
+- [Plugin Lifecycle](docs/contents/en-us/spec/plugin-lifecycle.md) - Plugin state machine & management
+- [Conversion Rules](docs/contents/en-us/spec/conversion-rules.md) - Bidirectional address conversion
+
+**[→ View all specs](docs/contents/en-us/spec/README.md)** | **[中文版 (zh-cn)](docs/contents/zh-cn/spec/README.md)**
 
 ## Plugin & Driver Architecture
 AVFS adopts **Protocol-Driver matched plugin mechanism**
@@ -257,7 +279,7 @@ avfs validate avfs://git/dev.azure.com/team/org/_git/service@main/src/entry.jar
 ## Repository Structure
 ```
 avfs-io
-├── spec          # Official AVFS protocol specification document
+├── docs/contents/en-us/spec  # Official AVFS protocol specification document
 ├── core          # Address parsing, path normalization, routing scheduler, plugin registry
 ├── driver        # Built-in five category official access drivers
 ├── plugin-sdk    # Development SDK for custom protocol & driver extension
