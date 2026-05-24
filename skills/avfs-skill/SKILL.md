@@ -408,7 +408,87 @@ SSH URL:     git@github.com:avfs-io/core.git → avfs://git/github.com/avfs-io/c
 | `validate` returns non-zero | Syntax error in address | Check address format against the spec above |
 | `fetch` returns 404 | Resource path incorrect or unreachable | Verify with `avfs stat` first |
 | `Multiple @ symbols` | Ambiguous version qualifier | Only the first `@` is treated as version delimiter |
-| Git fetch fails | Auth credentials missing | Set `GIT_TOKEN` env var or configure `~/.avfs/config.toml` |
+| Git fetch fails | Auth credentials missing | Check `~/.avfs/config.toml` — guide user to add credentials (see below) |
+| `avfs stat` returns "protocol not found" | Data source not registered | Guide user to register the source via `avfs plugin load` or auth config |
+
+### Graceful Handling: Missing Configuration or Authentication
+
+When an AVFS operation fails because a data source is not yet configured or authentication is missing, **do not** simply report a raw error. Instead, follow this friendly remediation flow:
+
+#### Step 1: Diagnose
+
+Identify the root cause from the error output:
+
+| Error Pattern | Root Cause |
+|--------------|------------|
+| `protocol not registered` / `unsupported protocol` | Data source not configured — no plugin or driver loaded for this protocol |
+| `authentication required` / `401` / `403` / `permission denied` | Credentials missing or expired for this source |
+| `connection refused` / `timeout` | Network or host unreachable — may be VPN or firewall |
+| `file not found` / `404` | Path incorrect or resource doesn't exist at this address |
+| `avfs: command not found` | CLI not installed — guide through installation |
+
+#### Step 2: Report Friendly
+
+Tell the user **what's missing** in plain language, **not** raw CLI errors:
+
+```
+Good:  "I can't reach the SMB share at 192.168.1.60 — it looks like
+        the share credentials aren't configured yet. Want me to help
+        you set that up?"
+
+Bad:   "Error: avfs fetch failed with exit code 1: SMB authentication
+        required. See avfs --help for details."
+```
+
+#### Step 3: Guide Through Setup
+
+For each common missing-config scenario, provide the fix:
+
+**Missing CLI installation:**
+```bash
+npm install -g @avfs/avfs-cli
+```
+
+**Missing protocol driver:**
+```bash
+avfs plugin list                          # check what's registered
+avfs plugin load ./path/to/driver.so      # load the missing driver
+```
+
+**Missing credentials (SMB / Git / HTTP):**
+Guide the user to edit `~/.avfs/config.toml` or set environment variables:
+```toml
+[git]
+auth-token = "${GIT_TOKEN}"
+
+[smb."192.168.1.60"]
+username = "your-username"
+password = "${SMB_PASSWORD}"
+```
+
+**Source not registered at all:**
+Ask the user for the source details, then register it:
+```bash
+# Configure a new data source in ~/.avfs/config.toml
+# or register a custom protocol plugin
+avfs plugin load ./custom-driver.so
+avfs convert <new-source-url> --to-avfs   # verify it works
+```
+
+#### Step 4: Verify
+
+After the user completes setup, verify with a quick check:
+```bash
+avfs stat <avfs-address>   # confirm the source is now reachable
+```
+
+#### Key Principle
+
+The user should never see raw tool errors. Every failure is an opportunity to guide them toward a working configuration — one step at a time, in plain language.
+
+### Principle: No File Reorganization Needed
+
+A core value of AVFS is that users do **not** need to restructure their files, create indexes, or follow special naming conventions for AI. Existing folders, URLs, and Git repos stay where they are. Once registered in AVFS, the Agent navigates them as-is. Do not ask the user to move files, rename directories, or create metadata files — AVFS eliminates that need.
 
 ### Verbose Debugging
 

@@ -12,37 +12,73 @@ Unify local disk, network service, LAN share, and Git repositories into one cons
 
 ## What is AVFS?
 
-AVFS is a virtual file system **protocol**. It does not store files — it provides a unified address scheme that maps heterogeneous storage backends (local files, HTTP/S, SMB, Git repos, and custom protocols) into one namespace. An AI agent only needs to know `avfs://...`; the underlying protocol plugin handles the rest.
+AVFS is a virtual file system **protocol** designed exclusively for **AI Agent-driven scenarios**. It does not store files — it provides a unified address scheme that maps heterogeneous storage backends (local files, HTTP/S, SMB, Git repos, and custom protocols) into one machine-readable namespace.
+
+AVFS is **not** a general-purpose file system for human users. It is a protocol consumed through AI Agents: the agent loads the AVFS SKILL, reads `avfs://` addresses, and intelligently invokes the `avfs` CLI to validate, convert, fetch, or inspect resources on behalf of the user. The user simply describes what they need in natural language; the agent translates that into AVFS operations.
+
+### How It Works (for Users)
+
+Getting started takes two steps:
+
+1. **Load the [AVFS SKILL](skills/avfs-skill/SKILL.md)** into your AI Agent. The SKILL automatically installs the `avfs` CLI if needed, then you configure your data sources — file paths, web endpoints, SMB shares, Git repos, and their credentials.
+2. **Done.** Your AI Agent now has a universal key to every configured source.
+
+```
+          SKILL (entry point)              AI Agent (every day)
+┌──────────────────────────────┐      ┌─────────────────────────────┐
+│                              │      │                             │
+│  Load AVFS SKILL             │      │  "Find my notes from        │
+│       ↓                      │      │   last week's meeting..."   │
+│  Auto-install avfs CLI       │ ───► │                ↓            │
+│       ↓                      │      │  avfs://file/.../notes.md   │
+│  Configure sources:          │      │  avfs://smb/.../meetings/   │
+│  • /home/projects            │      │  avfs://git/.../wiki/...    │
+│  • intranet wiki             │      │                ↓            │
+│  • \\server\share            │      │  Agent searches all         │
+│  • github.com/team           │      │  sources, finds the notes.  │
+└──────────────────────────────┘      └─────────────────────────────┘
+```
+
+The SKILL is the entry point. Load it once, configure your sources, and from then on you never tell the Agent where a file lives or how to access it — the Agent already knows, because AVFS connected everything.
+
+**No reorganization needed.** Your existing files, folders, URLs, and Git repos stay exactly where they are. You don't need to create indexes, follow naming conventions, or restructure anything for AI. Just register each source once in AVFS, and the Agent handles the rest.
 
 ## Use Cases
 
-### Agent-Driven Workflows
+> All scenarios below assume an **AI Agent** as the primary consumer. The agent uses the [AVFS SKILL](skills/avfs-skill/SKILL.md) to interpret user intent and drive the `avfs` CLI automatically.
 
-An AI agent is asked to review a document, then cross-reference it against a config file on a LAN share and a policy in a Git repo at a specific commit. Without AVFS, the agent would need to juggle three different access mechanisms. With AVFS, it's three addresses:
+### Research & Analysis
+
+A researcher asks the AI to gather information from a local paper in their Documents folder, a published article on the company intranet, and a dataset on the shared drive — then synthesize a summary. The agent pulls all three through `avfs://` addresses. The researcher never tells it where anything lives or how to access it.
 
 ```
-avfs://file/home/docs/review-draft.md
-avfs://smb/fileserver.internal/policies/config.yaml
-avfs://git/github.com/team/policy-repo@a1b2c3d/policy.md
+avfs://file/home/researcher/docs/paper.pdf
+avfs://https/intranet.company.com/articles/2024-overview.html
+avfs://smb/fileserver.internal/datasets/q2-results.csv
 ```
 
-One uniform interface. Zero context-switching.
+One question in natural language. Three storage backends. Zero manual lookups.
 
-### Cross-Environment CI/CD
+### Personal Knowledge Management
 
-A pipeline needs to pull build scripts from a local repo, test data from an intranet HTTP service, and an artifact from SMB storage. AVFS lets every stage reference its inputs with the same address scheme — no path translation, no hardcoded URLs, no environment-specific hacks.
+A user's notes are scattered across a local folder, a cloud drive, and a Git-backed wiki. When they ask "find my notes about project Alpha," the AI Agent searches all three sources through a single `avfs://` view. The user doesn't need to remember which platform holds which note — the agent navigates automatically.
 
-### Knowledge Retrieval & RAG
+### Team Collaboration
 
-Embedding pipelines and retrieval-augmented generation (RAG) systems can index files from across an entire organization's storage landscape using a single namespace. `avfs://` addresses become stable, traceable references for chunk provenance — regardless of whether the source is a local PDF, a Git-hosted markdown, or an intranet wiki page.
+"Compare the latest mockup on the shared drive with the one we shipped in the v2.0 release." The AI Agent fetches the SMB-hosted design file, then pulls the Git-tagged version from the repo — both through `avfs://`. No path-guessing, no manual URL construction.
 
-### Multi-Version Documentation
+```
+avfs://smb/studio.shared/projects/redesign/mockup.fig
+avfs://git/github.com/team/product@v2.0/assets/mockup.fig
+```
 
-Reference a single document across multiple branches or releases without duplicating it. Compare `avfs://git/...@main/api-spec.md` against `avfs://git/...@v2.0/api-spec.md` — ideal for changelog generation, compliance audits, and API compatibility checks.
+### Compliance & Audit
 
-### Private Storage Extension
+An auditor asks the AI to verify that the production config matches the approved version in Git and the baseline template on the file server. Three sources, one protocol: the agent fetches all three via `avfs://`, compares them, and reports discrepancies — no manual file hunting.
 
-Organizations with proprietary storage systems (object stores, legacy FTP, internal artifact registries) can register a custom AVFS protocol and driver. Once registered, every internal tool and agent accesses that storage through the same `avfs://custom-proto/...` pattern, eliminating one-off integrations.
+### New Team Member Onboarding
+
+A new hire asks "where is the architecture documentation?" The AI Agent automatically searches the local onboarding directory, the internal wiki, and the `docs/` folder in the team's Git repo — all through `avfs://`. The new hire gets the right file without being told which system to look in.
 
 ## Address Syntax
 
