@@ -1,14 +1,22 @@
+<div align="center">
+
 # AVFS (Agent Virtual File System)
 
-![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
-![Version](https://img.shields.io/badge/Version-v1.0.0-green.svg)
-![Specification](https://img.shields.io/badge/Type-Protocol%20Specification-orange.svg)
+<img src="docs/contents/assets/avfs-logo.png" alt="AVFS Logo" width="128" height="128"/>
 
 **通用跨存储寻址协议 - 面向 AI 智能体设计**
 
 将本地磁盘、网络服务、局域网共享、Git 仓库统一为一致的 `avfs://` 寻址标准，使智能体以一个统一的、机器可读的 URI 定位、获取和引用**任何文件资源**。
 
 [English](README.md) | **中文**
+
+![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
+![Version](https://img.shields.io/badge/Version-v1.0.0-green.svg)
+![Specification](https://img.shields.io/badge/Type-Protocol%20Specification-orange.svg)
+
+[AVFS v1 标准](docs/contents/zh-cn/spec/avfs-v1-standard.md) | [地址语法](docs/contents/zh-cn/spec/address-syntax.md) | [驱动接口](docs/contents/zh-cn/spec/driver-interface.md) | [插件](docs/contents/zh-cn/spec/plugin-lifecycle.md) | [全部规范](docs/contents/zh-cn/spec/README.md)
+
+</div>
 
 ## AVFS 是什么？
 

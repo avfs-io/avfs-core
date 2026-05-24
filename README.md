@@ -1,14 +1,22 @@
+<div align="center">
+
 # AVFS (Agent Virtual File System)
 
-![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
-![Version](https://img.shields.io/badge/Version-v1.0.0-green.svg)
-![Specification](https://img.shields.io/badge/Type-Protocol%20Specification-orange.svg)
+<img src="docs/contents/assets/avfs-logo.png" alt="AVFS Logo" width="128" height="128"/>
 
 **Universal Cross-Storage Addressing Protocol for AI Agents**
 
 Unify local disk, network service, LAN share, and Git repositories into one consistent `avfs://` addressing standard — so agents can locate, fetch, and reference **any file resource** with a single, machine-readable URI.
 
 **English** | [中文](README_CN.md)
+
+![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
+![Version](https://img.shields.io/badge/Version-v1.0.0-green.svg)
+![Specification](https://img.shields.io/badge/Type-Protocol%20Specification-orange.svg)
+
+[Spec v1](docs/contents/en-us/spec/avfs-v1-standard.md) | [Address Syntax](docs/contents/en-us/spec/address-syntax.md) | [Drivers](docs/contents/en-us/spec/driver-interface.md) | [Plugins](docs/contents/en-us/spec/plugin-lifecycle.md) | [All Specs](docs/contents/en-us/spec/README.md)
+
+</div>
 
 ## What is AVFS?
 
