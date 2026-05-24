@@ -2,16 +2,21 @@ import { describe, it, expect } from 'vitest';
 import { execSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 
 const cliEntry = resolve(
   fileURLToPath(import.meta.url),
   '../../dist/index.mjs',
 );
 
+const pkg = JSON.parse(
+  readFileSync(resolve(fileURLToPath(import.meta.url), '../../package.json'), 'utf-8'),
+);
+
 describe('CLI entry', () => {
-  it('should output version 0.1.0 with --version', () => {
+  it(`should output version ${pkg.version} with --version`, () => {
     const output = execSync(`node ${cliEntry} --version`, { encoding: 'utf-8' });
-    expect(output.trim()).toBe('0.1.0');
+    expect(output.trim()).toBe(pkg.version);
   });
 
   it('should output help with --help', () => {
