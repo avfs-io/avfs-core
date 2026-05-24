@@ -9,6 +9,9 @@ export default defineConfig({
       js: format === "esm" ? ".mjs" : ".cjs",
     };
   },
+  banner: {
+    js: "#!/usr/bin/env node",
+  },
   dts: false,
   clean: true,
   shims: true,
