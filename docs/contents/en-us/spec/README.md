@@ -13,6 +13,8 @@ This directory contains the authoritative definition of the AVFS protocol standa
 | [**driver-interface.md**](./driver-interface.md) | Official driver plugin interface contract, type definitions, error types, registration API | Draft |
 | [**plugin-lifecycle.md**](./plugin-lifecycle.md) | Plugin state machine, registration/routing/process/manage phases, event system, security | Draft |
 | [**conversion-rules.md**](./conversion-rules.md) | Bidirectional address conversion rules for file/HTTP/SMB/Git/custom protocols with full examples | Draft |
+| [**authentication.md**](./authentication.md) | Credential store model, resolution, sources, driver auth contract, security requirements | Draft |
+| [**avfs-skill**](../../../../skills/avfs-skill/SKILL.md) | AI Agent SKILL — teaches AI Agents to use `avfs` CLI for address recognition, conversion, and content retrieval | Active |
 
 ## Quick Start
 
@@ -21,6 +23,7 @@ This directory contains the authoritative definition of the AVFS protocol standa
 3. **Implement a driver**: [`driver-interface.md`](./driver-interface.md) for the interface contract you must implement
 4. **Understand lifecycle**: [`plugin-lifecycle.md`](./plugin-lifecycle.md) for how plugins are managed at runtime
 5. **Handle conversions**: [`conversion-rules.md`](./conversion-rules.md) for native↔AVFS mapping algorithms
+6. **Configure authentication**: [`authentication.md`](./authentication.md) for credential management and driver auth
 
 ## Purpose
 

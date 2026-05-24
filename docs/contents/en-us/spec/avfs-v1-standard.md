@@ -30,9 +30,11 @@
 7. [Address Bidirectional Conversion](#7-address-bidirectional-conversion)
 8. [CLI Command Specification](#8-cli-command-specification)
 9. [Plugin Extension Development Specification](#9-plugin-extension-development-specification)
-10. [Project Directory Structure](#10-project-directory-structure)
-11. [License Statement](#11-license-statement)
-12. [Related Links](#12-related-links)
+10. [Authentication & Credential Management](#10-authentication--credential-management)
+11. [Project Directory Structure](#11-project-directory-structure)
+12. [AVFS AI Agent Skill](#12-avfs-ai-agent-skill)
+13. [License Statement](#13-license-statement)
+14. [Related Links](#14-related-links)
 
 ---
 
@@ -326,23 +328,89 @@ avfs validate <avfs-address>
 
 ---
 
-## 10. Project Directory Structure
+## 10. Authentication & Credential Management
+
+AVFS follows a **separation of credential routing and authentication execution** model:
+- **Core** maintains a `CredentialStore` that resolves which credentials apply to which `(protocol, resourceBase)` pair
+- **Drivers** consume credentials from `DriverConfig.credentials` and execute their own authentication logic
+
+This means every driver independently handles its own auth mechanism (token, password, certificate, OAuth, etc.), while the core provides unified credential storage and lookup.
+
+**Full specification**: [authentication.md](./authentication.md)
+
+Key topics covered in the authentication spec:
+- Credential Store interface and resolution algorithm
+- Pattern-based credential matching (`github.com/*`, `*.internal`, etc.)
+- Credential source priority (agent override > vault > config file > env > anonymous)
+- Driver authentication contract and security requirements
+- Credential lifecycle (registration, refresh, revocation)
+
+---
+## 11. Project Directory Structure
 
 ```
 avfs-io
-├── spec          # AVFS official protocol specification document
-├── core          # Address parser, path normalization, routing scheduler, plugin registry
-├── driver        # Built-in five official access drivers
-├── plugin-sdk    # Custom protocol & driver development SDK
-├── sdk           # Multi-language official development SDK
-├── cli           # Command line tool source code
-├── examples      # Full-scenario usage & custom plugin demo
-└── docs          # Official website static resource source
+├── docs/contents/en-us/spec      # AVFS English protocol specification
+├── docs/contents/zh-cn/spec      # AVFS Chinese protocol specification
+├── core                          # Address parser, path normalization, routing scheduler, plugin registry
+├── driver                        # Built-in five official access drivers
+├── plugin-sdk                    # Custom protocol & driver development SDK
+├── sdk                           # Multi-language official development SDK
+├── cli                           # Command line tool source code
+├── skills                        # AI Agent SKILL definitions (avfs-skill)
+├── examples                      # Full-scenario usage & custom plugin demo
+└── docs                          # Official website static resource source
 ```
 
 ---
 
-## 11. License Statement
+## 12. AVFS AI Agent Skill
+
+AVFS provides an official AI Agent SKILL — a structured markdown document (`SKILL.md`) that teaches AI Agents (CodeBuddy, Cursor, Claude Code, etc.) to use the `avfs` CLI as a wrapper, enabling automatic address recognition, conversion, and content retrieval across all storage backends.
+
+### 12.1 Skill Location
+
+```
+skills/avfs-skill/SKILL.md
+```
+
+### 12.2 What the Skill Covers
+
+| Workflow | CLI Command | Description |
+|----------|------------|-------------|
+| Address Recognition & Parsing | `avfs stat <address>` | Parse `avfs://` address into protocol, host, path, version, anchor |
+| Bidirectional Conversion | `avfs convert <path> --to-avfs` / `--to-native` | Lossless mapping between native paths/URLs and AVFS format |
+| Resource Fetching | `avfs fetch <address> [-o path]` | Download or pipe resource content from any storage backend |
+| Metadata Inspection | `avfs stat <address>` | Inspect file size, MIME type, timestamps without downloading |
+| Address Validation | `avfs validate <address>` | Syntax check against AVFS v1 grammar rules |
+| Plugin Management | `avfs plugin list/load/unregister` | Manage custom protocol drivers |
+
+### 12.3 Skill Architecture
+
+The SKILL acts as a declarative instruction layer above the CLI:
+
+```
+AI Agent → loads SKILL.md → understands AVFS protocol & CLI
+    → receives user file reference
+    → decides: validate? convert? fetch? stat?
+    → executes appropriate avfs CLI command
+    → returns content / metadata / converted address to user
+```
+
+The SKILL includes a decision flowchart, protocol-specific conversion rules, error handling guidance, and common recipe patterns (cross-storage cross-reference, batch processing, multi-version Git comparison).
+
+### 12.4 Usage
+
+Load the SKILL into any AI Agent platform by referencing `skills/avfs-skill/SKILL.md` as a context document. The agent can then:
+
+- Automatically recognize `avfs://` URIs in user input
+- Convert any file reference (local path, URL, UNC path, Git URL) to/from AVFS format
+- Fetch and process file content from any registered storage backend
+- Validate address syntax before passing to downstream tools
+
+---
+
+## 13. License Statement
 
 This protocol specification and corresponding implementation code are open sourced under Apache License 2.0.
 
@@ -354,7 +422,7 @@ Full license text is stored in project root [`LICENSE`](../LICENSE) file.
 
 ---
 
-## 12. Related Links
+## 14. Related Links
 
 | Link | URL |
 |------|-----|

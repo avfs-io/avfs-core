@@ -13,6 +13,8 @@ AVFS 协议规范官方中文文档。
 | [**driver-interface.md**](./driver-interface.md) | 官方驱动插件接口契约、类型定义、错误类型、注册 API | 草案 |
 | [**plugin-lifecycle.md**](./plugin-lifecycle.md) | 插件状态机、注册/路由/处理/管理阶段、事件系统、安全 | 草案 |
 | [**conversion-rules.md**](./conversion-rules.md) | file/HTTP/SMB/Git/自定义协议的双向地址转换规则与完整示例 | 草案 |
+| [**authentication.md**](./authentication.md) | 凭据存储模型、解析、来源、驱动认证契约、安全要求 | 草案 |
+| [**avfs-skill**](../../../../skills/avfs-skill/SKILL.md) | AI 智能体技能 — 教导 AI 智能体使用 `avfs` CLI 进行地址识别、转换和内容获取 | 活跃 |
 
 ## 快速开始
 
@@ -21,6 +23,7 @@ AVFS 协议规范官方中文文档。
 3. **实现驱动**：[`driver-interface.md`](./driver-interface.md) 查看你必须实现的接口契约
 4. **了解生命周期**：[`plugin-lifecycle.md`](./plugin-lifecycle.md) 了解插件在运行时如何被管理
 5. **处理转换**：[`conversion-rules.md`](./conversion-rules.md) 学习原生↔AVFS 映射算法
+6. **配置认证**：[`authentication.md`](./authentication.md) 了解凭据管理与驱动认证
 
 ## 用途
 
