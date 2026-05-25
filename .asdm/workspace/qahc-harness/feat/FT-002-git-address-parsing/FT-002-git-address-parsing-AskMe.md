@@ -255,7 +255,7 @@ AVFS 项目已完成 FT-001 CLI 基础框架搭建（help/version + 6 组 Mock �
 
 | 选项 | 描述 | 优点 | 缺点 |
 | ------ | ------ | ------ | ------ |
-| A | GitHub API 方式（`GET /repos/.../contents/...`） | 无需本地存储，速度快 | 仅 GitHub 有效，其他平台需要 fallback；有 API rate limit（未认证 60次/小时） |
+| A | GitHub API 方式（`GET /repos/.../contents/...`） | 无需本地存储，速度快 | 仅 GitHub 有效，仅支持 Public Repo（匿名访问），有 rate limit（60次/小时）；Private Repo 需后序认证特性 |
 | B | `git clone --depth 1` 浅克隆到临时目录 | 通用性好，全平台支持 | 有磁盘 I/O 开销，需管理临时目录生命周期 |
 | C | A + B 组合：优先 API（GitHub 平台），fallback 浅克隆（其他平台 + GitHub 大文件） | 两全其美 | 实现复杂度最高 |
 
@@ -445,6 +445,104 @@ AVFS 项目已完成 FT-001 CLI 基础框架搭建（help/version + 6 组 Mock �
 | 12 | Git 命令依赖 | ~~废弃~~（API 模式不需要） | ❌ 废弃 |
 | 13 | convert 协议范围 | A — 全 5 协议 | ✅ 已确认 |
 | 14 | fetch 非 git 行为 | A — 明确报错 | ✅ 已确认 |
+| 15 | 认证与仓库可见性 | A — 仅 GitHub Public Repo（无认证） | ✅ 已确认 |
+| 16 | 标准化测试数据框架 | A — `cli/test/fixtures/` JSON fixtures | ✅ 已确认 |
+
+### 决策点 15：认证与仓库可见性（新增）
+
+**问题**：FT-002 的 GitHub API Driver 是否需要支持 Private Repo 认证？
+
+**背景**：
+- 决策点 8 选择通过 GitHub REST API（`GET /repos/{org}/{repo}/contents/{path}?ref={version}`）获取文件
+- GitHub API 对 Public Repo 支持匿名访问（无需认证），对 Private Repo 需要 Token/OAuth 认证
+- 匿名 API 有 rate limit 限制（60 次/小时），但 FT-002 属于低频使用场景
+- 认证机制引入额外复杂度：Token 管理、安全存储、环境变量配置
+
+**选项**：
+
+| 选项 | 描述 | 优点 | 缺点 |
+| ------ | ------ | ------ | ------ |
+| A | 仅支持 Public Repo 匿名访问 | 实现简单，零配置，聚焦核心流程 | 不支持私有仓库 |
+| B | 同时支持 Public + Private（含 Token/OAuth 认证） | 覆盖全场景 | 需 Token 管理、安全存储，范围大 |
+
+**推荐**：✅ 选项 A — 仅 GitHub Public Repo，无认证
+
+**确认理由**：
+1. FT-002 聚焦 GitHub 地址解析 + 文件获取的核心流程，先打通公开仓库链路
+2. 认证机制涉及 Token 安全存储（`~/.avfs/auth` 或环境变量）、GitHub App/OAuth 两种认证模式选择
+3. Private Repo 在实际使用中占比低，且认证是独立正交特性，不应阻塞 FT-002 交付
+4. 后续通过独立的认证特性（如 FT-0XX-auth）统一处理全平台认证
+
+**状态**：✅ 已确认
+
+---
+
+### 决策点 16：标准化测试数据框架（新增）
+
+**问题**：FT-002 需要为 AVFS 建立一套可持续扩展的标准化测试数据框架。测试数据应如何组织、放置在何处？
+
+**背景**：
+- FT-002 是首个实现真实功能的特性，需要大量测试用例覆盖地址解析、协议转换、平台检测
+- 后续特性（FT-003+）会持续增加新的测试场景（fetch、convert、多平台 driver 等）
+- 测试数据应具备：**可复用**（跨测试文件共享）、**可增量追加**（后续特性不重构已有结构）、**类型安全**（TypeScript 直接 import）
+- 现有 `cli/test/` 下仅有 3 个手写测试文件（commands/drivers/index），无 fixture 机制
+
+**选项**：
+
+| 选项 | 描述 | 优点 | 缺点 |
+| ------ | ------ | ------ | ------ |
+| A | `cli/test/fixtures/` 按领域分目录，每个 JSON 含 `{ meta, testCases[] }` | 就近原则，`resolveJsonModule` 直接 import；按领域增量追加零冲突 | 无 |
+| B | 项目根目录 `test-data/` 独立存放，跨包共享 | 未来 cli/core/driver 包可共享 | 当前仅 cli 需要，过早抽象；跨包引用增加构建复杂度 |
+| C | TypeScript 文件硬编码测试数据（`export const testCases = [...]`） | 类型推导直接 | 数据与逻辑混在一起；新增用例需要修改 .ts 文件；无法被外部工具消费 |
+
+**推荐**：✅ 选项 A — `cli/test/fixtures/` JSON fixtures
+
+**组织形式**：
+
+```
+cli/test/fixtures/
+├── README.md                       # 使用规范与 schema 说明
+├── addressing/                     # FT-002：地址解析
+│   ├── valid-uris.json             #   合法 AVFS URI（5 协议全覆盖）
+│   ├── invalid-uris.json           #   非法 URI + 期望错误
+│   ├── git-conversion.json         #   原生 Git URL ↔ AVFS 双向转换对
+│   └── platform-detection.json     #   Git 平台检测（GitHub/未知）
+├── fetching/                       # 后续特性
+├── converting/                     # 后续特性
+└── integration/                    # 后续特性：端到端场景
+```
+
+**统一 schema**：
+
+```json
+{
+  "meta": {
+    "feature": "FT-002",
+    "category": "addressing",
+    "subcategory": "valid-uris",
+    "description": "...",
+    "updated": "2026-05-25"
+  },
+  "testCases": [
+    {
+      "id": "git-simple-main",
+      "description": "Git protocol with branch version",
+      "tags": ["happy-path", "git", "github"],
+      "input": "avfs://git/github.com/avfs-io/core@main/readme.md",
+      "expected": { "protocol": "git", "resourceBase": "...", ... }
+    }
+  ]
+}
+```
+
+**确认理由**：
+1. 与现有 `cli/test/` 同级，Vitest 直接 `import` JSON（`resolveJsonModule: true`），零额外配置
+2. `test/` 已被 `tsconfig.json` 排除构建，fixtures 不影响 `dist/`
+3. 按领域分目录：后续特性只需在 `fixtures/` 下新建子目录，已有数据不受影响
+4. JSON 格式可被外部工具（脚本、CI）消费，不依赖 TypeScript 运行时
+5. FT-002 首期交付 4 组数据集（valid-uris / invalid-uris / git-conversion / platform-detection），覆盖本特性全部解析与转换场景
+
+**状态**：✅ 已确认
 
 ---
 
@@ -482,6 +580,16 @@ AVFS 项目已完成 FT-001 CLI 基础框架搭建（help/version + 6 组 Mock �
 **回答**：✅ 决策点 9、10、13、14 按 AI 推荐方案全部确认。
 **日期**：2026-05-25
 
+### 决策点 15 回答
+
+**回答**：✅ 选项 A — 仅 GitHub Public Repo（无认证），Private Repo + OAuth/Token 后续支持。
+**日期**：2026-05-25
+
+### 决策点 16 回答
+
+**回答**：✅ 选项 A — `cli/test/fixtures/` JSON fixtures，按领域分目录，统一 `{ meta, testCases[] }` 结构，FT-002 首期交付 4 组数据集。
+**日期**：2026-05-25
+
 ---
 
 ## 关联文档
@@ -493,7 +601,7 @@ AVFS 项目已完成 FT-001 CLI 基础框架搭建（help/version + 6 组 Mock �
 
 ---
 
-**文档版本**：1.0
+**文档版本**：1.2
 **创建日期**：2026-05-25
-**最后更新**：2026-05-25（14/14 决策全部确认，访谈完成）
+**最后更新**：2026-05-25（16/16 决策全部确认，访谈完成）
 **维护者**：AI Agent (qahc-harness)
