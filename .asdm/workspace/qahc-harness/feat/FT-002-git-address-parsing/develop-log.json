@@ -1,0 +1,83 @@
+{
+  "feature_id": "FT-002",
+  "feature_name": "Git 地址解析",
+  "plan_path": ".asdm/workspace/qahc-harness/feat/FT-002-git-address-parsing/FT-002-git-address-parsing-Plan.md",
+  "base_commit": "0c7e4ddfb7782088256071b711bc439280e5aa81",
+  "current_phase": 1,
+  "current_task": "1.1",
+  "tasks": {
+    "1.1": {
+      "name": "测试数据框架 + 核心类型定义",
+      "phase": 1,
+      "phase_name": "Parser 核心与地址校验/解析",
+      "depends_on": [],
+      "status": "pending",
+      "history": []
+    },
+    "1.2": {
+      "name": "URI 解析器 + validate 命令激活",
+      "phase": 1,
+      "phase_name": "Parser 核心与地址校验/解析",
+      "depends_on": ["1.1"],
+      "status": "pending",
+      "history": []
+    },
+    "1.3": {
+      "name": "协议转换器 (file/http/https/smb) + stat 命令激活",
+      "phase": 1,
+      "phase_name": "Parser 核心与地址校验/解析",
+      "depends_on": ["1.2"],
+      "status": "pending",
+      "history": []
+    },
+    "2.1": {
+      "name": "Git 平台检测模块",
+      "phase": 2,
+      "phase_name": "Git 平台识别与地址双向转换",
+      "depends_on": ["1.3"],
+      "status": "pending",
+      "history": []
+    },
+    "2.2": {
+      "name": "Git 转换器 + convert --to-avfs",
+      "phase": 2,
+      "phase_name": "Git 平台识别与地址双向转换",
+      "depends_on": ["2.1"],
+      "status": "pending",
+      "history": []
+    },
+    "2.3": {
+      "name": "convert --to-native 全协议实现",
+      "phase": 2,
+      "phase_name": "Git 平台识别与地址双向转换",
+      "depends_on": ["2.2"],
+      "status": "pending",
+      "history": []
+    },
+    "3.1": {
+      "name": "GitHub API Driver 实现",
+      "phase": 3,
+      "phase_name": "Git 驱动与文件获取",
+      "depends_on": ["2.3"],
+      "status": "pending",
+      "history": []
+    },
+    "3.2": {
+      "name": "fetch 命令激活",
+      "phase": 3,
+      "phase_name": "Git 驱动与文件获取",
+      "depends_on": ["3.1"],
+      "status": "pending",
+      "history": []
+    },
+    "3.3": {
+      "name": "单元测试 + 覆盖率配置 + CI 验证",
+      "phase": 3,
+      "phase_name": "Git 驱动与文件获取",
+      "depends_on": ["3.2"],
+      "status": "pending",
+      "history": []
+    }
+  },
+  "last_updated": "2026-05-25T15:56:00+08:00"
+}
