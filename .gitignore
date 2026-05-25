@@ -1,5 +1,6 @@
 # ASDM toolsets & workspace
-.asdm/
+.asdm/*
+!.asdm/workspace/
 
 # CodeBuddy commands & rules
 .codebuddy/

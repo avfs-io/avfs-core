@@ -1,0 +1,416 @@
+{
+  "feature_id": "FT-001",
+  "feature_name": "CLI 基础框架",
+  "plan_path": ".asdm/workspace/qahc-harness/feat/FT-001-cli-foundation/FT-001-cli-foundation-Plan.md",
+  "base_commit": "8adcc183e2362c065cbf6db4bc4d8455f976aa56",
+  "current_phase": 4,
+  "current_task": "4.3",
+  "tasks": {
+    "1.1": {
+      "name": "项目配置初始化",
+      "phase": 1,
+      "phase_name": "项目骨架与 CLI 入口",
+      "depends_on": [],
+      "status": "completed",
+      "history": [
+        {
+          "from": "pending",
+          "to": "in_progress",
+          "timestamp": "2026-05-24T15:50:00+08:00",
+          "reason": "用户确认开始"
+        },
+        {
+          "from": "in_progress",
+          "to": "implemented",
+          "timestamp": "2026-05-24T15:50:00+08:00",
+          "reason": "完成 4 个配置文件创建: package.json, tsconfig.json, tsup.config.ts, .gitignore"
+        },
+        {
+          "from": "implemented",
+          "to": "verifying",
+          "timestamp": "2026-05-24T15:50:00+08:00",
+          "reason": "开始执行 4 条验证步骤"
+        },
+        {
+          "from": "verifying",
+          "to": "verified",
+          "timestamp": "2026-05-24T15:50:00+08:00",
+          "reason": "4/4 验证步骤全部通过"
+        },
+        {
+          "from": "verified",
+          "to": "human_confirming",
+          "timestamp": "2026-05-24T15:53:00+08:00",
+          "reason": "等待人工确认"
+        },
+        {
+          "from": "human_confirming",
+          "to": "completed",
+          "timestamp": "2026-05-24T15:54:00+08:00",
+          "reason": "用户确认通过"
+        }
+      ]
+    },
+    "1.2": {
+      "name": "CLI 入口与 help/version",
+      "phase": 1,
+      "phase_name": "项目骨架与 CLI 入口",
+      "depends_on": ["1.1"],
+      "status": "completed",
+      "history": [
+        {
+          "from": "pending",
+          "to": "in_progress",
+          "timestamp": "2026-05-24T15:55:00+08:00",
+          "reason": "用户确认开始，进入实现阶段"
+        },
+        {
+          "from": "in_progress",
+          "to": "implemented",
+          "timestamp": "2026-05-24T15:56:00+08:00",
+          "reason": "创建 cli/src/index.ts + 更新 package.json 依赖 + pnpm install && pnpm build 成功"
+        },
+        {
+          "from": "implemented",
+          "to": "verifying",
+          "timestamp": "2026-05-24T15:57:00+08:00",
+          "reason": "开始执行 5 条验证步骤"
+        },
+        {
+          "from": "verifying",
+          "to": "verified",
+          "timestamp": "2026-05-24T15:57:00+08:00",
+          "reason": "5/5 验证步骤全部通过"
+        },
+        {
+          "from": "verified",
+          "to": "human_confirming",
+          "timestamp": "2026-05-24T15:57:00+08:00",
+          "reason": "等待人工确认"
+        },
+        {
+          "from": "human_confirming",
+          "to": "completed",
+          "timestamp": "2026-05-24T15:58:00+08:00",
+          "reason": "用户确认通过"
+        }
+      ]
+    },
+    "1.3": {
+      "name": "命令注册框架",
+      "phase": 1,
+      "phase_name": "项目骨架与 CLI 入口",
+      "depends_on": ["1.2"],
+      "status": "completed",
+      "history": [
+        {
+          "from": "pending",
+          "to": "in_progress",
+          "timestamp": "2026-05-24T16:02:00+08:00",
+          "reason": "用户确认开始，进入实现阶段"
+        },
+        {
+          "from": "in_progress",
+          "to": "implemented",
+          "timestamp": "2026-05-24T16:02:00+08:00",
+          "reason": "创建 cli/src/commands/index.ts + 更新 cli/src/index.ts 调用 registerAllCommands"
+        },
+        {
+          "from": "implemented",
+          "to": "verifying",
+          "timestamp": "2026-05-24T16:03:00+08:00",
+          "reason": "开始执行 3 条验证步骤"
+        },
+        {
+          "from": "verifying",
+          "to": "verified",
+          "timestamp": "2026-05-24T16:03:00+08:00",
+          "reason": "3/3 验证步骤全部通过"
+        },
+        {
+          "from": "verified",
+          "to": "human_confirming",
+          "timestamp": "2026-05-24T16:03:00+08:00",
+          "reason": "等待人工确认"
+        },
+        {
+          "from": "human_confirming",
+          "to": "completed",
+          "timestamp": "2026-05-24T16:04:00+08:00",
+          "reason": "用户确认通过"
+        }
+      ]
+    },
+    "2.1": {
+      "name": "6 组 Mock 命令",
+      "phase": 2,
+      "phase_name": "Mock 命令与边界处理",
+      "depends_on": ["1.3"],
+      "status": "completed",
+      "history": [
+        {
+          "from": "pending",
+          "to": "in_progress",
+          "timestamp": "2026-05-24T16:08:00+08:00",
+          "reason": "用户确认开始，进入实现阶段"
+        },
+        {
+          "from": "in_progress",
+          "to": "implemented",
+          "timestamp": "2026-05-24T16:09:00+08:00",
+          "reason": "创建 6 个 Mock 命令文件 + 更新 commands/index.ts, pnpm build 成功"
+        },
+        {
+          "from": "implemented",
+          "to": "verifying",
+          "timestamp": "2026-05-24T16:09:00+08:00",
+          "reason": "开始执行 8 条验证步骤"
+        },
+        {
+          "from": "verifying",
+          "to": "verified",
+          "timestamp": "2026-05-24T16:10:00+08:00",
+          "reason": "8/8 验证步骤全部通过 (V2.1.7 需双参数, Plan 验证命令拼写有误已修正)"
+        },
+        {
+          "from": "verified",
+          "to": "human_confirming",
+          "timestamp": "2026-05-24T16:10:00+08:00",
+          "reason": "等待人工确认"
+        },
+        {
+          "from": "human_confirming",
+          "to": "completed",
+          "timestamp": "2026-05-24T16:10:00+08:00",
+          "reason": "用户确认通过"
+        }
+      ]
+    },
+    "2.2": {
+      "name": "Node 版本运行时检查",
+      "phase": 2,
+      "phase_name": "Mock 命令与边界处理",
+      "depends_on": ["2.1"],
+      "status": "completed",
+      "history": [
+        {
+          "from": "pending",
+          "to": "in_progress",
+          "timestamp": "2026-05-24T16:12:00+08:00",
+          "reason": "用户确认开始，进入实现阶段"
+        },
+        {
+          "from": "in_progress",
+          "to": "implemented",
+          "timestamp": "2026-05-24T16:12:00+08:00",
+          "reason": "cli/src/index.ts 顶部添加 Node >= 20 运行时检查，pnpm build 成功"
+        },
+        {
+          "from": "implemented",
+          "to": "verifying",
+          "timestamp": "2026-05-24T16:12:00+08:00",
+          "reason": "开始执行 4 条验证步骤"
+        },
+        {
+          "from": "verifying",
+          "to": "verified",
+          "timestamp": "2026-05-24T16:12:00+08:00",
+          "reason": "4/4 验证步骤全部通过"
+        },
+        {
+          "from": "verified",
+          "to": "human_confirming",
+          "timestamp": "2026-05-24T16:12:00+08:00",
+          "reason": "等待人工确认"
+        },
+        {
+          "from": "human_confirming",
+          "to": "completed",
+          "timestamp": "2026-05-24T16:13:00+08:00",
+          "reason": "用户确认通过"
+        }
+      ]
+    },
+    "3.1": {
+      "name": "Driver 接口与空实现",
+      "phase": 3,
+      "phase_name": "驱动接口",
+      "depends_on": ["2.1"],
+      "status": "completed",
+      "history": [
+        {
+          "from": "pending",
+          "to": "in_progress",
+          "timestamp": "2026-05-24T16:15:00+08:00",
+          "reason": "用户确认开始，进入实现阶段"
+        },
+        {
+          "from": "in_progress",
+          "to": "implemented",
+          "timestamp": "2026-05-24T16:15:00+08:00",
+          "reason": "创建 6 个驱动文件: driver.interface.ts + 5 个协议空实现 (file/http/https/smb/git)"
+        },
+        {
+          "from": "implemented",
+          "to": "verifying",
+          "timestamp": "2026-05-24T16:16:00+08:00",
+          "reason": "开始执行 4 条验证步骤"
+        },
+        {
+          "from": "verifying",
+          "to": "verified",
+          "timestamp": "2026-05-24T16:16:00+08:00",
+          "reason": "4/4 验证步骤全部通过"
+        },
+        {
+          "from": "verified",
+          "to": "human_confirming",
+          "timestamp": "2026-05-24T16:17:00+08:00",
+          "reason": "等待人工确认"
+        },
+        {
+          "from": "human_confirming",
+          "to": "completed",
+          "timestamp": "2026-05-24T16:18:00+08:00",
+          "reason": "用户确认通过"
+        }
+      ]
+    },
+    "4.1": {
+      "name": "vitest 测试",
+      "phase": 4,
+      "phase_name": "测试与 CI/CD",
+      "depends_on": ["2.1", "3.1"],
+      "status": "completed",
+      "history": [
+        {
+          "from": "pending",
+          "to": "in_progress",
+          "timestamp": "2026-05-24T16:31:00+08:00",
+          "reason": "用户确认开始，进入实现阶段"
+        },
+        {
+          "from": "in_progress",
+          "to": "implemented",
+          "timestamp": "2026-05-24T16:33:00+08:00",
+          "reason": "创建 test/index.test.ts + test/commands.test.ts + test/drivers.test.ts, pnpm install vitest, pnpm build 成功, pnpm test 33/33 通过无警告"
+        },
+        {
+          "from": "implemented",
+          "to": "verifying",
+          "timestamp": "2026-05-24T16:33:00+08:00",
+          "reason": "开始执行 5 条验证步骤"
+        },
+        {
+          "from": "verifying",
+          "to": "verified",
+          "timestamp": "2026-05-24T16:34:00+08:00",
+          "reason": "5/5 验证步骤全部通过"
+        },
+        {
+          "from": "verified",
+          "to": "human_confirming",
+          "timestamp": "2026-05-24T16:34:00+08:00",
+          "reason": "等待人工确认"
+        },
+        {
+          "from": "human_confirming",
+          "to": "completed",
+          "timestamp": "2026-05-24T16:34:00+08:00",
+          "reason": "用户确认通过"
+        }
+      ]
+    },
+    "4.2": {
+      "name": "GitHub Actions CI 流水线",
+      "phase": 4,
+      "phase_name": "测试与 CI/CD",
+      "depends_on": ["4.1"],
+      "status": "completed",
+      "history": [
+        {
+          "from": "pending",
+          "to": "in_progress",
+          "timestamp": "2026-05-24T16:37:00+08:00",
+          "reason": "用户确认开始，进入实现阶段"
+        },
+        {
+          "from": "in_progress",
+          "to": "implemented",
+          "timestamp": "2026-05-24T16:37:00+08:00",
+          "reason": "创建 .github/workflows/avfs-cli-ci.yml: push/PR 触发, 3 节点矩阵(20.x/22.x/24.x), install→test→build"
+        },
+        {
+          "from": "implemented",
+          "to": "verifying",
+          "timestamp": "2026-05-24T16:38:00+08:00",
+          "reason": "开始执行 5 条验证步骤"
+        },
+        {
+          "from": "verifying",
+          "to": "verified",
+          "timestamp": "2026-05-24T16:38:00+08:00",
+          "reason": "5/5 验证步骤全部通过"
+        },
+        {
+          "from": "verified",
+          "to": "human_confirming",
+          "timestamp": "2026-05-24T16:38:00+08:00",
+          "reason": "等待人工确认"
+        },
+        {
+          "from": "human_confirming",
+          "to": "completed",
+          "timestamp": "2026-05-24T16:39:00+08:00",
+          "reason": "用户确认通过"
+        }
+      ]
+    },
+    "4.3": {
+      "name": "GitHub Actions CD 流水线",
+      "phase": 4,
+      "phase_name": "测试与 CI/CD",
+      "depends_on": ["4.1"],
+      "status": "completed",
+      "history": [
+        {
+          "from": "pending",
+          "to": "in_progress",
+          "timestamp": "2026-05-24T16:41:00+08:00",
+          "reason": "用户确认开始，进入实现阶段"
+        },
+        {
+          "from": "in_progress",
+          "to": "implemented",
+          "timestamp": "2026-05-24T16:41:00+08:00",
+          "reason": "创建 .github/workflows/avfs-cli-publish.yml: v* tag 触发, pnpm publish --access public, NPM_TOKEN secret"
+        },
+        {
+          "from": "implemented",
+          "to": "verifying",
+          "timestamp": "2026-05-24T16:41:00+08:00",
+          "reason": "开始执行 5 条验证步骤"
+        },
+        {
+          "from": "verifying",
+          "to": "verified",
+          "timestamp": "2026-05-24T16:41:00+08:00",
+          "reason": "5/5 验证步骤全部通过"
+        },
+        {
+          "from": "verified",
+          "to": "human_confirming",
+          "timestamp": "2026-05-24T16:41:00+08:00",
+          "reason": "等待人工确认"
+        },
+        {
+          "from": "human_confirming",
+          "to": "completed",
+          "timestamp": "2026-05-24T16:42:00+08:00",
+          "reason": "用户确认通过"
+        }
+      ]
+    }
+  },
+  "last_updated": "2026-05-24T16:42:00+08:00"
+}
