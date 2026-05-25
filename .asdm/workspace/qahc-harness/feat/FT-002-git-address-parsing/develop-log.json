@@ -4,15 +4,40 @@
   "plan_path": ".asdm/workspace/qahc-harness/feat/FT-002-git-address-parsing/FT-002-git-address-parsing-Plan.md",
   "base_commit": "0c7e4ddfb7782088256071b711bc439280e5aa81",
   "current_phase": 1,
-  "current_task": "1.1",
+  "current_task": "1.2",
   "tasks": {
     "1.1": {
       "name": "测试数据框架 + 核心类型定义",
       "phase": 1,
       "phase_name": "Parser 核心与地址校验/解析",
       "depends_on": [],
-      "status": "pending",
-      "history": []
+      "status": "completed",
+      "history": [
+        {
+          "timestamp": "2026-05-25T16:13:00+08:00",
+          "from": "pending",
+          "to": "in_progress",
+          "reason": "用户确认开始任务 1.1"
+        },
+        {
+          "timestamp": "2026-05-25T16:14:00+08:00",
+          "from": "in_progress",
+          "to": "implemented",
+          "reason": "创建 cli/src/parser/types.ts + cli/test/fixtures/ 下 5 个文件"
+        },
+        {
+          "timestamp": "2026-05-25T16:16:00+08:00",
+          "from": "implemented",
+          "to": "verified",
+          "reason": "全部 6 条验证步骤通过：tsc 编译通过，4 组 JSON fixtures 结构/数量/内容均达标"
+        },
+        {
+          "timestamp": "2026-05-25T16:17:00+08:00",
+          "from": "verified",
+          "to": "completed",
+          "reason": "用户确认任务完成"
+        }
+      ]
     },
     "1.2": {
       "name": "URI 解析器 + validate 命令激活",
@@ -79,5 +104,5 @@
       "history": []
     }
   },
-  "last_updated": "2026-05-25T15:56:00+08:00"
+  "last_updated": "2026-05-25T16:17:00+08:00"
 }

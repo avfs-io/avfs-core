@@ -26,7 +26,7 @@
 
 | Phase | 任务 | 状态 | 交付物 |
 | :----: | ------ | :----: | ------ |
-| 1 | 1.1 测试数据框架 + 类型定义 | ⏳ | `cli/test/fixtures/` (4 组 JSON) + `cli/src/parser/types.ts` |
+| 1 | 1.1 测试数据框架 + 类型定义 | ✅ | `cli/test/fixtures/` (4 组 JSON) + `cli/src/parser/types.ts` |
 | 1 | 1.2 URI 解析器 + validate 命令激活 | ⏳ | `cli/src/parser/uri-parser.ts`, `validator.ts`, `index.ts` + 修改 `validate.command.ts` |
 | 1 | 1.3 协议转换器 (file/http/https/smb) + stat 命令激活 | ⏳ | 4 个 converter + `converter.interface.ts` + 修改 `stat.command.ts` |
 | 2 | 2.1 Git 平台检测模块 | ⏳ | `git-platform.interface.ts`, `github-platform.ts`, `platform-registry.ts` |
@@ -82,17 +82,17 @@
 
 #### 验证步骤
 
-- [ ] **V1.1.1** 类型文件编译通过，无 TypeScript 错误
+- [x] **V1.1.1** 类型文件编译通过，无 TypeScript 错误 ✅
   `cd cli && npx tsc --noEmit`
-- [ ] **V1.1.2** valid-uris.json 包含 5 协议各至少 2 条合法 URI
-  `cat cli/test/fixtures/addressing/valid-uris.json | jq '.testCases | length'` → `>= 10`
-- [ ] **V1.1.3** invalid-uris.json 包含至少 5 种非法 URI 类型
-  `cat cli/test/fixtures/addressing/invalid-uris.json | jq '.testCases | length'` → `>= 5`
-- [ ] **V1.1.4** git-conversion.json 包含 HTTPS + SSH 转换对
-  `cat cli/test/fixtures/git-conversion.json | jq '.testCases[] | select(.native | startswith("https://") or startswith("git@"))'` → 有结果
-- [ ] **V1.1.5** platform-detection.json 包含 GitHub 平台与非 GitHub 平台用例
-  `cat cli/test/fixtures/platform-detection.json | jq '[.testCases[].expected.platform] | unique'` → 含 `"github"` 和 `"unknown"`
-- [ ] **V1.1.6** 所有 JSON 文件符合 `{ meta: {...}, testCases: [...] }` 统一结构
+- [x] **V1.1.2** valid-uris.json 包含 5 协议各至少 2 条合法 URI ✅
+  `cat cli/test/fixtures/addressing/valid-uris.json | jq '.testCases | length'` → `12 >= 10`
+- [x] **V1.1.3** invalid-uris.json 包含至少 5 种非法 URI 类型 ✅
+  `cat cli/test/fixtures/addressing/invalid-uris.json | jq '.testCases | length'` → `10 >= 5`
+- [x] **V1.1.4** git-conversion.json 包含 HTTPS + SSH 转换对 ✅
+  `cat cli/test/fixtures/git-conversion.json | jq '.testCases[] | select(.expected.native | startswith("https://") or startswith("git@"))'` → 8 条结果
+- [x] **V1.1.5** platform-detection.json 包含 GitHub 平台与非 GitHub 平台用例 ✅
+  `cat cli/test/fixtures/platform-detection.json | jq '[.testCases[].expected.platform] | unique'` → `["github","unknown"]`
+- [x] **V1.1.6** 所有 JSON 文件符合 `{ meta: {...}, testCases: [...] }` 统一结构 ✅
   `for f in cli/test/fixtures/**/*.json; do jq 'keys | contains(["meta","testCases"])' "$f"; done` → 全部 `true`
 
 ---
