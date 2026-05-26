@@ -158,11 +158,11 @@ jobs:
             exit 0
           else
             echo "status=failure" >> $GITHUB_OUTPUT
-            MSG="❌ CI gate blocked — "
-            [[ "$TEST_RESULT" != "success" ]] && "${MSG}test=${TEST_RESULT}, "
-            [[ "$TYPECHECK_RESULT" != "success" ]] && "${MSG}typecheck=${TYPECHECK_RESULT}, "
-            [[ "$BUILD_RESULT" != "success" ]] && "${MSG}build=${BUILD_RESULT}, "
-            echo "message=$MSG" | sed 's/, $//' >> $GITHUB_OUTPUT
+            MSG="CI gate blocked —"
+            [[ "$TEST_RESULT" != "success" ]] && MSG+=" test=${TEST_RESULT}"
+            [[ "$TYPECHECK_RESULT" != "success" ]] && MSG+=" typecheck=${TYPECHECK_RESULT}"
+            [[ "$BUILD_RESULT" != "success" ]] && MSG+=" build=${BUILD_RESULT}"
+            echo "message=${MSG}" >> $GITHUB_OUTPUT
             exit 1
           fi
 
