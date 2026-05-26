@@ -28,7 +28,7 @@
 | :----: | ------ | :----: | ------ |
 | 1 | 1.1 测试数据框架 + 类型定义 | ✅ | `cli/test/fixtures/` (4 组 JSON) + `cli/src/parser/types.ts` |
 | 1 | 1.2 URI 解析器 + validate 命令激活 | ✅ | `cli/src/parser/uri-parser.ts`, `validator.ts`, `index.ts` + 修改 `validate.command.ts` |
-| 1 | 1.3 协议转换器 (file/http/https/smb) + stat 命令激活 | ⏳ | 4 个 converter + `converter.interface.ts` + 修改 `stat.command.ts` |
+| 1 | 1.3 协议转换器 (file/http/https/smb) + stat 命令激活 | ✅ | 4 个 converter + `converter.interface.ts` + 修改 `stat.command.ts` |
 | 2 | 2.1 Git 平台检测模块 | ⏳ | `git-platform.interface.ts`, `github-platform.ts`, `platform-registry.ts` |
 | 2 | 2.2 Git 转换器 + convert --to-avfs | ⏳ | `git-converter.ts` + 修改 `convert.command.ts`（--to-avfs 方向）|
 | 2 | 2.3 convert --to-native 全协议实现 | ⏳ | 所有 converter 的 `toNative()` 方法 + convert 命令补全 |
@@ -174,21 +174,21 @@
 
 #### 验证步骤
 
-- [ ] **V1.3.1** 编译通过
+- [x] **V1.3.1** 编译通过 ✅
   `cd cli && npx tsc --noEmit`
-- [ ] **V1.3.2** file converter 正确转换 Unix 绝对路径 → `avfs://file/...`
+- [x] **V1.3.2** file converter 正确转换 Unix 绝对路径 → `avfs://file/...` ✅
   `cd cli && npx vitest run test/parser/protocol-converters.test.ts --reporter=verbose`
-- [ ] **V1.3.3** http converter 正确保留端口号 → `avfs://http/host:port/path`
+- [x] **V1.3.3** http converter 正确保留端口号 → `avfs://http/host:port/path` ✅
   `cd cli && npx vitest run test/parser/protocol-converters.test.ts` → http 用例通过
-- [ ] **V1.3.4** https converter 正确转换 URL（含子路径、不含端口）
+- [x] **V1.3.4** https converter 正确转换 URL（含子路径、不含端口） ✅
   `cd cli && npx vitest run test/parser/protocol-converters.test.ts` → https 用例通过
-- [ ] **V1.3.5** smb converter 正确处理 UNC 路径 `\\server\share\...` → `avfs://smb/server/share/...`
+- [x] **V1.3.5** smb converter 正确处理 UNC 路径 `\\server\share\...` → `avfs://smb/server/share/...` ✅
   `cd cli && npx vitest run test/parser/protocol-converters.test.ts` → smb 用例通过
-- [ ] **V1.3.6** `avfs stat avfs://git/github.com/avfs-io/core@main/readme.md` → 输出完整 JSON（含 protocol、resourceBase、version、filePath）
+- [x] **V1.3.6** `avfs stat avfs://git/github.com/avfs-io/core@main/readme.md` → 输出完整 JSON（含 protocol、resourceBase、version、filePath） ✅
   `cd cli && pnpm build && node dist/index.mjs stat 'avfs://git/github.com/avfs-io/core@main/readme.md' | jq '{protocol, resourceBase, version, filePath}'`
-- [ ] **V1.3.7** `avfs stat avfs://file/home/user/config.json#L120` → 正确提取 anchor
+- [x] **V1.3.7** `avfs stat avfs://file/home/user/config.json#L120` → 正确提取 anchor ✅
   `cd cli && pnpm build && node dist/index.mjs stat 'avfs://file/home/user/config.json#L120' | jq '.anchor'` → `"L120"`
-- [ ] **V1.3.8** 5 协议各 1 条 stat 全部正确输出
+- [x] **V1.3.8** 5 协议各 1 条 stat 全部正确输出 ✅
   `for addr in 'avfs://file/home/test.txt' 'avfs://http/example.com/data.csv' 'avfs://https/cdn.example.com/pkg.zip' 'avfs://smb/10.0.0.1/share/doc.pdf' 'avfs://git/github.com/avfs-io/core@main/README.md'; do cd cli && node dist/index.mjs stat "$addr" | jq '{protocol, isValid}'; done` → 全部 `isValid: true`
 
 ---
