@@ -180,7 +180,7 @@ jobs:
             const state = '${{ steps.gate.outputs.status }}' === 'success' ? 'success' : 'failure';
             const description = '${{ steps.gate.outputs.message }}';
 
-            await rest.repos.createCommitStatus({
+            await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
               sha: context.sha,
