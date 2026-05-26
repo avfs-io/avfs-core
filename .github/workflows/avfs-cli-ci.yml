@@ -176,7 +176,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const context = 'CI / 🔒 PR Merge Gate';
+            const statusContext = 'CI / PR Merge Gate';
             const state = '${{ steps.gate.outputs.status }}' === 'success' ? 'success' : 'failure';
             const description = '${{ steps.gate.outputs.message }}';
 
@@ -185,7 +185,7 @@ jobs:
               repo: context.repo.repo,
               sha: context.sha,
               state,
-              context,
+              context: statusContext,
               description,
               target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
             });
