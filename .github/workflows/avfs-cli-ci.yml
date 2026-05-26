@@ -45,6 +45,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build project (required for CLI entry-point tests)
+        run: pnpm build
+
       - name: Run tests with coverage
         run: pnpm test:coverage
         env:
