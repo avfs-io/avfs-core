@@ -88,6 +88,11 @@ export class GitConverter implements ProtocolConverter {
    *                      filePath: "path/file.ts" } }
    */
   toNative(parsed: ParsedAddress): NativeUrl {
+    // Guard against incomplete input — resourceBase is required
+    if (!parsed?.resourceBase) {
+      throw new Error('GitConverter.toNative() is not yet implemented');
+    }
+
     // Try to find a registered platform that can build the clone URL
     let cloneUrl: string;
 

@@ -7,10 +7,16 @@ export function registerStatCommand(program: Command): void {
     .description('Get file metadata from an AVFS address')
     .argument('<address>', 'AVFS address to inspect')
     .action((address: string) => {
-      const parsed = parseAvfsUri(address);
-      console.log(JSON.stringify(parsed));
+      try {
+        const parsed = parseAvfsUri(address);
+        console.log(JSON.stringify(parsed));
 
-      if (!parsed.isValid) {
+        if (!parsed.isValid) {
+          process.exitCode = 1;
+        }
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`Error: ${message}`);
         process.exitCode = 1;
       }
     });

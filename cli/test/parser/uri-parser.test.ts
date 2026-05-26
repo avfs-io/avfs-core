@@ -94,11 +94,11 @@ describe('uri-parser — parseAvfsUri', () => {
       expect(result.errors).toContain('File path is required');
     });
 
-    it('git with version but no filePath → specific error', () => {
-      const result = parseAvfsUri('avfs://git/github.com/avfs-io/core@main');
+    it('git with version but no filePath → file path required error', () => {
+      const result = parseAvfsUri('avfs://git/github.com/avfs-io/core?ref=main');
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain(
-        'File path is required when version is specified'
+        'File path is required'
       );
       expect(result.version).toBe('main');
       expect(result.filePath).toBeNull();
@@ -130,13 +130,30 @@ describe('uri-parser — parseAvfsUri', () => {
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain("Unsupported protocol: 'git_hub'");
     });
+
+    it('git URI with empty ref parameter (?ref=) → empty ref error', () => {
+      // Covers uri-parser.ts lines 137-139: empty ref value path
+      const result = parseAvfsUri('avfs://git/github.com/avfs-io/core/readme.md?ref=');
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain('Version ref parameter must not be empty');
+      expect(result.version).toBeNull();
+    });
+
+    it('non-git protocol with query string → query ignored', () => {
+      // Covers uri-parser.ts line 142: non-git query string ignored
+      const result = parseAvfsUri('avfs://http/example.com/path?query=ignored');
+      expect(result.isValid).toBe(true);
+      expect(result.protocol).toBe('http');
+      expect(result.resourceBase).toBe('example.com');
+      expect(result.filePath).toBe('path'); // ?query=ignored is stripped
+    });
   });
 });
 
 describe('uri-parser — validateAvfsUri', () => {
   it('valid address → valid=true with address', () => {
     const result = validateAvfsUri(
-      'avfs://git/github.com/avfs-io/core@main/readme.md'
+      'avfs://git/github.com/avfs-io/core/readme.md?ref=main'
     );
     expect(result.valid).toBe(true);
     expect(result.address).toBeDefined();

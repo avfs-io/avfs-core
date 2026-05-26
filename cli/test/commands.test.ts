@@ -8,48 +8,51 @@ const cliEntry = resolve(
   '../../dist/index.mjs',
 );
 
-const mockMsg = 'planned but not yet implemented';
+/** Helper: run CLI command and return combined stdout+stderr, swallowing non-zero exits */
+function runCli(args: string): string {
+  try {
+    return execSync(`node ${cliEntry} ${args}`, {
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+  } catch (err: any) {
+    // execSync throws on non-zero exit — return captured output anyway
+    return (err.stdout ?? '') + (err.stderr ?? '');
+  }
+}
 
 describe('Mock commands', () => {
-  it('fetch should output mock message', () => {
-    const output = execSync(`node ${cliEntry} fetch test`, {
-      encoding: 'utf-8',
-    });
-    expect(output).toContain(mockMsg);
+  it('fetch should output error for invalid address', () => {
+    const output = runCli('fetch test');
+    expect(output).toContain('Invalid AVFS address');
   });
 
-  it('convert should output mock message', () => {
-    const output = execSync(`node ${cliEntry} convert test`, {
-      encoding: 'utf-8',
-    });
-    expect(output).toContain(mockMsg);
+  it('convert should output error for undetectable protocol', () => {
+    const output = runCli('convert test');
+    expect(output).toContain('Unable to detect protocol');
   });
 
-  it('stat should output mock message', () => {
-    const output = execSync(`node ${cliEntry} stat test`, {
-      encoding: 'utf-8',
-    });
-    expect(output).toContain(mockMsg);
+  it('stat should output parsed result (even if invalid)', () => {
+    const output = runCli('stat test');
+    const json = JSON.parse(output);
+    expect(json.isValid).toBe(false);
+    expect(json.errors).toContain("Address must start with 'avfs://'");
   });
 
-  it('validate should output mock message', () => {
-    const output = execSync(`node ${cliEntry} validate test`, {
-      encoding: 'utf-8',
-    });
-    expect(output).toContain(mockMsg);
+  it('validate should output validation result (even if invalid)', () => {
+    const output = runCli('validate test');
+    const json = JSON.parse(output);
+    expect(json.valid).toBe(false);
+    expect(json.errors).toContain("Address must start with 'avfs://'");
   });
 
   it('plugin list should output mock message', () => {
-    const output = execSync(`node ${cliEntry} plugin list`, {
-      encoding: 'utf-8',
-    });
-    expect(output).toContain(mockMsg);
+    const output = runCli('plugin list');
+    expect(output).toContain('planned but not yet implemented');
   });
 
   it('credential set should output mock message', () => {
-    const output = execSync(`node ${cliEntry} credential set key value`, {
-      encoding: 'utf-8',
-    });
-    expect(output).toContain(mockMsg);
+    const output = runCli('credential set key value');
+    expect(output).toContain('planned but not yet implemented');
   });
 });

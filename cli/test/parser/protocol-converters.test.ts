@@ -4,7 +4,8 @@ import { HttpConverter } from '../../src/parser/protocol-converters/http-convert
 import { HttpsConverter } from '../../src/parser/protocol-converters/https-converter.js';
 import { SmbConverter } from '../../src/parser/protocol-converters/smb-converter.js';
 import { GitConverter } from '../../src/parser/protocol-converters/git-converter.js';
-import type { ParsedAddress } from '../../src/parser/types.js';
+import { registerConverter, getConverter, detectProtocol, isSupportedProtocol } from '../../src/parser/protocol-converters/converter.interface.js';
+import type { ParsedAddress, ProtocolType } from '../../src/parser/types.js';
 
 // ── Shared helper ──
 
@@ -544,5 +545,93 @@ describe('Round-trip conversion (native → toAvfs → toNative)', () => {
     // Git toNative returns cloneUrl (with .git suffix)
     expect(native.url).toContain('.git');
     expect(native.metadata!.cloneUrl).toContain('github.com/avfs-io/core.git');
+  });
+});
+
+// ── Converter Registry tests — covers converter.interface.ts exports ──
+
+describe('Converter Registry', () => {
+  describe('registerConverter / getConverter', () => {
+    it('should retrieve converter after manual registration', () => {
+      // Register git converter manually (bypasses broken require() in lazy-init)
+      const gitConv = new GitConverter();
+      registerConverter(gitConv);
+      const conv = getConverter('git');
+      expect(conv).toBeDefined();
+      expect(conv!.protocol).toBe('git');
+    });
+
+    it('should return undefined for unregistered protocol that has no lazy init', () => {
+      // 'ftp' has no lazy init path and is not pre-registered
+      expect(getConverter('ftp' as ProtocolType)).toBeUndefined();
+    });
+
+    it('registerConverter should register and be retrievable via getConverter', () => {
+      const mockConverter = {
+        protocol: 'test-proto' as ProtocolType,
+        detect: () => false,
+        toAvfs: (): ParsedAddress => ({
+          protocol: 'test-proto',
+          resourceBase: '',
+          version: null,
+          filePath: null,
+          anchor: null,
+          rawInput: '',
+          isValid: false,
+          errors: ['mock'],
+        }),
+        toNative: () => ({ url: '', protocol: 'test-proto' }),
+      };
+      registerConverter(mockConverter);
+      const retrieved = getConverter('test-proto');
+      expect(retrieved).toBeDefined();
+      expect(retrieved!.protocol).toBe('test-proto');
+    });
+  });
+
+  describe('isSupportedProtocol', () => {
+    it('should return true for all 5 supported protocols', () => {
+      expect(isSupportedProtocol('file')).toBe(true);
+      expect(isSupportedProtocol('http')).toBe(true);
+      expect(isSupportedProtocol('https')).toBe(true);
+      expect(isSupportedProtocol('smb')).toBe(true);
+      expect(isSupportedProtocol('git')).toBe(true);
+    });
+
+    it('should return false for unsupported protocol', () => {
+      expect(isSupportedProtocol('ftp')).toBe(false);
+      expect(isSupportedProtocol('ssh')).toBe(false);
+      expect(isSupportedProtocol('')).toBe(false);
+    });
+  });
+
+  describe('detectProtocol', () => {
+    it('should detect git SSH URL as highest priority', () => {
+      expect(detectProtocol('git@github.com:org/repo')).toBe('git');
+    });
+
+    it('should detect git HTTPS URL', () => {
+      expect(detectProtocol('https://github.com/org/repo')).toBe('git');
+    });
+
+    it('should detect SMB UNC path', () => {
+      expect(detectProtocol('\\\\server\\share\\path')).toBe('smb');
+    });
+
+    it('should detect file path', () => {
+      expect(detectProtocol('/home/user/file.txt')).toBe('file');
+    });
+
+    it('should detect HTTPS URL', () => {
+      expect(detectProtocol('https://example.com/file')).toBe('https');
+    });
+
+    it('should detect HTTP URL', () => {
+      expect(detectProtocol('http://example.com/file')).toBe('http');
+    });
+
+    it('should return null for unrecognized input', () => {
+      expect(detectProtocol('not-a-known-protocol')).toBeNull();
+    });
   });
 });

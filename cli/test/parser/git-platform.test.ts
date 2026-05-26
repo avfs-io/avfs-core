@@ -119,6 +119,38 @@ describe('GitHubPlatform', () => {
     });
   });
 
+  describe('splitAvfsPath', () => {
+    it('should split simple path with file', () => {
+      const result = platform.splitAvfsPath('github.com/avfs-io/core/readme.md');
+      expect(result.resourceBase).toBe('github.com/avfs-io/core');
+      expect(result.filePath).toBe('readme.md');
+    });
+
+    it('should split deep nested file path', () => {
+      const result = platform.splitAvfsPath('github.com/avfs-io/avfs-core/docs/contents/en-us/spec/address-syntax.md');
+      expect(result.resourceBase).toBe('github.com/avfs-io/avfs-core');
+      expect(result.filePath).toBe('docs/contents/en-us/spec/address-syntax.md');
+    });
+
+    it('should return null filePath when only host/owner/repo (no file)', () => {
+      const result = platform.splitAvfsPath('github.com/avfs-io/core');
+      expect(result.resourceBase).toBe('github.com/avfs-io/core');
+      expect(result.filePath).toBeNull();
+    });
+
+    it('should return null filePath when incomplete (only host/owner)', () => {
+      const result = platform.splitAvfsPath('github.com/avfs-io');
+      expect(result.resourceBase).toBe('github.com/avfs-io');
+      expect(result.filePath).toBeNull();
+    });
+
+    it('should handle single-segment path (host only)', () => {
+      const result = platform.splitAvfsPath('github.com');
+      expect(result.resourceBase).toBe('github.com');
+      expect(result.filePath).toBeNull();
+    });
+  });
+
   describe('fixture-based tests', () => {
     for (const tc of platformFixtures.testCases) {
       it(`[${tc.id}] ${tc.description}`, () => {
@@ -206,6 +238,12 @@ describe('PlatformRegistry', () => {
           return m ? `gitlab.com/${m[1]}` : '';
         },
         buildCloneUrl: (rb: string) => `https://${rb}.git`,
+        splitAvfsPath: (path: string) => {
+          // GitLab-style: variable segments, take all but last as resourceBase
+          const lastSlash = path.lastIndexOf('/');
+          if (lastSlash < 0) return { resourceBase: path, filePath: null };
+          return { resourceBase: path.slice(0, lastSlash), filePath: path.slice(lastSlash + 1) };
+        },
       };
 
       const initialCount = registry.getRegisteredPlatforms().length;
@@ -225,6 +263,7 @@ describe('PlatformRegistry', () => {
         detect: () => true,
         extractResourceBase: () => 'custom',
         buildCloneUrl: () => 'custom-url',
+        splitAvfsPath: (path: string) => ({ resourceBase: path, filePath: null }),
       };
 
       registry.register(mockPlatform);
@@ -241,6 +280,49 @@ describe('PlatformRegistry', () => {
       const platforms = registry.getRegisteredPlatforms();
       expect(platforms).toContain('github');
       expect(Array.isArray(platforms)).toBe(true);
+    });
+  });
+
+  describe('splitAvfsPath (fallback / non-GitHub host)', () => {
+    // Covers platform-registry.ts defaultSplit() method (lines 128-143)
+    const registry = new PlatformRegistry();
+
+    it('should use default split for non-github host with file path', () => {
+      // defaultSplit: "host/seg1/seg2/path/file" → resourceBase=host/seg1, filePath=seg2/path/file
+      const result = registry.splitAvfsPath('gitlab.com/org/repo/docs/readme.md');
+      // firstSlash=9 (gitlab.com/), secondSlash=13 (org/) → resourceBase=gitlab.com/org
+      expect(result.resourceBase).toBe('gitlab.com/org');
+      expect(result.filePath).toBe('repo/docs/readme.md');
+    });
+
+    it('should use default split for non-github host without file path (2 segments)', () => {
+      const result = registry.splitAvfsPath('gitlab.com/org/repo');
+      // firstSlash=9, secondSlash=13 → resourceBase=gitlab.com/org, filePath=repo
+      expect(result.resourceBase).toBe('gitlab.com/org');
+      expect(result.filePath).toBe('repo');
+    });
+
+    it('should use default split for single-segment path (host only)', () => {
+      const result = registry.splitAvfsPath('example.com');
+      expect(result.resourceBase).toBe('example.com');
+      expect(result.filePath).toBeNull();
+    });
+  });
+
+  describe('detectPlatformByResourceBase', () => {
+    // Covers platform-registry.ts lines 73-82
+    const registry = new PlatformRegistry();
+
+    it('should detect github from github.com/ resource base', () => {
+      expect(registry.detectPlatformByResourceBase('github.com/avfs-io/core')).toBe('github');
+    });
+
+    it('should return unknown for non-github resource base', () => {
+      expect(registry.detectPlatformByResourceBase('gitlab.com/org/repo')).toBe('unknown');
+    });
+
+    it('should return unknown for empty string', () => {
+      expect(registry.detectPlatformByResourceBase('')).toBe('unknown');
     });
   });
 });

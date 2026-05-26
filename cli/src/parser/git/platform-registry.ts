@@ -1,5 +1,5 @@
 import type { GitPlatformType } from '../types.js';
-import type { GitPlatform } from './git-platform.interface.js';
+import type { GitPlatform, AvfsPathSplitResult } from './git-platform.interface.js';
 import { GitHubPlatform } from './github-platform.js';
 
 /**
@@ -79,6 +79,67 @@ export class PlatformRegistry {
       // Future platforms can be added here with their own matching logic
     }
     return 'unknown';
+  }
+
+  /**
+   * Split an AVFS URI path using platform-aware rules.
+   *
+   * Tries each registered platform in order to find one whose host
+   * matches the path prefix, then delegates to its splitAvfsPath().
+   * If no platform matches, falls back to a default "first slash" strategy.
+   *
+   * @param path - Full path after protocol, e.g. "github.com/avfs-io/avfs-core/docs/README.md"
+   * @returns Split result with resourceBase and filePath
+   */
+  splitAvfsPath(path: string): AvfsPathSplitResult {
+    // Try each registered platform to see if its host matches
+    for (const platform of this.platforms) {
+      const result = this.tryPlatformSplit(platform, path);
+      if (result !== null) return result;
+    }
+
+    // Fallback: use simple first-slash-after-host heuristic
+    return this.defaultSplit(path);
+  }
+
+  /**
+   * Attempt to split using a specific platform's host pattern.
+   * @returns Split result if the platform's host matches, null otherwise.
+   */
+  private tryPlatformSplit(platform: GitPlatform, path: string): AvfsPathSplitResult | null {
+    // Extract host from path (everything before first /)
+    const firstSlash = path.indexOf('/');
+    if (firstSlash < 0) return null;
+    const host = path.slice(0, firstSlash);
+
+    // For GitHub: check if path starts with "github.com/"
+    if (platform.name === 'github' && host.toLowerCase() === 'github.com') {
+      return platform.splitAvfsPath(path);
+    }
+    // Future platforms: add their host matching logic here
+
+    return null;
+  }
+
+  /**
+   * Default fallback split when no platform matches.
+   * Uses "host + next segment = resourceBase" heuristic.
+   */
+  private defaultSplit(path: string): AvfsPathSplitResult {
+    const firstSlash = path.indexOf('/');
+    if (firstSlash < 0) {
+      return { resourceBase: path, filePath: null };
+    }
+
+    const secondSlash = path.indexOf('/', firstSlash + 1);
+    if (secondSlash < 0) {
+      return { resourceBase: path, filePath: null };
+    }
+
+    return {
+      resourceBase: path.slice(0, secondSlash),
+      filePath: path.slice(secondSlash + 1),
+    };
   }
 
   /**

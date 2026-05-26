@@ -7,10 +7,16 @@ export function registerValidateCommand(program: Command): void {
     .description('Validate an AVFS address syntax')
     .argument('<address>', 'AVFS address to validate')
     .action((address: string) => {
-      const result = validateAvfsUri(address);
-      console.log(JSON.stringify(result));
+      try {
+        const result = validateAvfsUri(address);
+        console.log(JSON.stringify(result));
 
-      if (!result.valid) {
+        if (!result.valid) {
+          process.exitCode = 1;
+        }
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`Error: ${message}`);
         process.exitCode = 1;
       }
     });

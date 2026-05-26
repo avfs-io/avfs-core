@@ -55,6 +55,9 @@ function classifyHttpError(status: number, filePath: string, owner: string, repo
  * Supports anonymous read access to **public repositories** only.
  * Uses Node.js built-in `fetch()` — zero runtime dependencies added.
  *
+ * Version is passed via the AVFS URI `?ref=` query parameter,
+ * which eliminates ambiguity when branch names contain "/".
+ *
  * @remarks Replaces FT-001 stub with a real implementation for Phase 3.
  */
 export class GitDriver implements Driver {
@@ -66,7 +69,7 @@ export class GitDriver implements Driver {
   /** Parsed repository name (e.g. "core") */
   private repo = '';
 
-  /** Git ref (branch / tag / commit SHA) */
+  /** Git ref (branch / tag / commit SHA) from ?ref= query parameter */
   private version: string | null = null;
 
   // ─── Lifecycle ────────────────────────────────────────────────
@@ -96,9 +99,7 @@ export class GitDriver implements Driver {
     this.ensureConnected();
 
     const url = buildContentsUrl(this.owner, this.repo, filePath, this.version);
-    const response = await this.fetchWithTimeout(url, {
-      headers: { Accept: 'application/vnd.github.v3+json' },
-    });
+    const response = await this.fetchWithTimeout(url, { headers: { Accept: 'application/vnd.github.v3+json' } });
 
     if (!response.ok) {
       throw new Error(classifyHttpError(response.status, filePath, this.owner, this.repo));
@@ -125,9 +126,7 @@ export class GitDriver implements Driver {
     this.ensureConnected();
 
     const url = buildContentsUrl(this.owner, this.repo, filePath, this.version);
-    const response = await this.fetchWithTimeout(url, {
-      headers: { Accept: 'application/vnd.github.v3.raw' },
-    });
+    const response = await this.fetchWithTimeout(url, { headers: { Accept: 'application/vnd.github.v3.raw' } });
 
     if (!response.ok) {
       throw new Error(classifyHttpError(response.status, filePath, this.owner, this.repo));
@@ -202,7 +201,7 @@ export class GitDriver implements Driver {
       '.gif': 'image/gif',
       '.sh': 'application/x-sh',
       '.py': 'text/x-python',
-      '.rs': 'text/x-rust',
+      '.rs': 'text/rust',
       '.go': 'text/x-go',
       '.java': 'text/x-java',
       '.xml': 'application/xml',

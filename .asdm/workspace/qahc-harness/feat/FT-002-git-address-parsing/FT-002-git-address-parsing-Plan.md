@@ -33,8 +33,8 @@
 | 2 | 2.2 Git 转换器 + convert --to-avfs | ✅ | `git-converter.ts` + 修改 `convert.command.ts`（--to-avfs 方向）|
 | 2 | 2.3 convert --to-native 全协议实现 | ✅ | 所有 converter 的 `toNative()` 方法 + convert 命令补全 |
 | 3 | 3.1 GitHub API Driver 实现 | ✅ | 修改 `git.driver.ts`（connect/read/stat/close）|
-| 3 | 3.2 fetch 命令激活 | ⏳ | 修改 `fetch.command.ts`（stdout / -o 文件写入）|
-| 3 | 3.3 单元测试 + 覆盖率配置 + CI 验证 | ⏳ | vitest 测试文件 + `@vitest/coverage-v8` 配置 + CI 通过 |
+| 3 | 3.2 fetch 命令激活 | ✅ | 修改 `fetch.command.ts`（stdout / -o 文件写入）|
+| 3 | 3.3 单元测试 + 覆盖率配置 + CI 验证 | ✅ | vitest 测试文件 + `@vitest/coverage-v8` 配置 + `.github/workflows/ci.yml` + 覆盖率达标 |
 
 ---
 
@@ -102,7 +102,7 @@
 #### 核心逻辑
 
 1. 实现 `cli/src/parser/uri-parser.ts`：
-   - `parseAvfsUri(raw: string): ParsedAddress` — 按 PRD §3.3.1 算法实现：前缀检查 → 锚点拆分 → 协议提取 → resourceBase/version/filePath 拆分（git 协议支持 @version 语法，非 git 协议无 version）→ 校验 → 返回 ParsedAddress（不抛异常）
+   - `parseAvfsUri(raw: string): ParsedAddress` — 按 PRD §3.3.1 算法实现：前缀检查 → 锚点拆分 → 协议提取 → 查询参数提取（`?ref=version`）→ 平台感知 resourceBase/filePath 拆分 → 校验 → 返回 ParsedAddress（不抛异常）
 2. 实现 `cli/src/parser/validator.ts`：
    - `validateAvfsUri(raw: string): ValidationResult` — 调用 parseAvfsUri，包装为简化结果 `{ valid, address?, errors? }`
 3. 实现 `cli/src/parser/index.ts` 公共导出
@@ -130,8 +130,8 @@
   `cd cli && npx vitest run test/parser/uri-parser.test.ts --reporter=verbose`
 - [x] **V1.2.3** 非法 URI 解析返回 `isValid: false` + 对应 errors ✅
   `cd cli && npx vitest run test/parser/uri-parser.test.ts` → 全部通过
-- [x] **V1.2.4** `avfs validate avfs://git/github.com/avfs-io/core@main/readme.md` → `{"valid":true,...}` ✅
-  `cd cli && pnpm build && node dist/index.mjs validate 'avfs://git/github.com/avfs-io/core@main/readme.md'`
+- [x] **V1.2.4** `avfs validate 'avfs://git/github.com/avfs-io/core/readme.md?ref=main'` → `{"valid":true,...}` ✅
+  `cd cli && pnpm build && node dist/index.mjs validate 'avfs://git/github.com/avfs-io/core/readme.md?ref=main'`
 - [x] **V1.2.5** `avfs validate "not-an-avfs-address"` → `{"valid":false,"errors":[...]}` + exit 1 ✅
   `cd cli && pnpm build && node dist/index.mjs validate 'not-an-avfs-address' || echo "exit=$?"` → 含 errors 数组
 - [x] **V1.2.6** 5 协议各 1 个合法地址校验通过 ✅
@@ -184,12 +184,12 @@
   `cd cli && npx vitest run test/parser/protocol-converters.test.ts` → https 用例通过
 - [x] **V1.3.5** smb converter 正确处理 UNC 路径 `\\server\share\...` → `avfs://smb/server/share/...` ✅
   `cd cli && npx vitest run test/parser/protocol-converters.test.ts` → smb 用例通过
-- [x] **V1.3.6** `avfs stat avfs://git/github.com/avfs-io/core@main/readme.md` → 输出完整 JSON（含 protocol、resourceBase、version、filePath） ✅
-  `cd cli && pnpm build && node dist/index.mjs stat 'avfs://git/github.com/avfs-io/core@main/readme.md' | jq '{protocol, resourceBase, version, filePath}'`
+- [x] **V1.3.6** `avfs stat 'avfs://git/github.com/avfs-io/core/readme.md?ref=main'` → 输出完整 JSON（含 protocol、resourceBase、version、filePath） ✅
+  `cd cli && pnpm build && node dist/index.mjs stat 'avfs://git/github.com/avfs-io/core/readme.md?ref=main' | jq '{protocol, resourceBase, version, filePath}'`
 - [x] **V1.3.7** `avfs stat avfs://file/home/user/config.json#L120` → 正确提取 anchor ✅
   `cd cli && pnpm build && node dist/index.mjs stat 'avfs://file/home/user/config.json#L120' | jq '.anchor'` → `"L120"`
 - [x] **V1.3.8** 5 协议各 1 条 stat 全部正确输出 ✅
-  `for addr in 'avfs://file/home/test.txt' 'avfs://http/example.com/data.csv' 'avfs://https/cdn.example.com/pkg.zip' 'avfs://smb/10.0.0.1/share/doc.pdf' 'avfs://git/github.com/avfs-io/core@main/README.md'; do cd cli && node dist/index.mjs stat "$addr" | jq '{protocol, isValid}'; done` → 全部 `isValid: true`
+  `for addr in 'avfs://file/home/test.txt' 'avfs://http/example.com/data.csv' 'avfs://https/cdn.example.com/pkg.zip' 'avfs://smb/10.0.0.1/share/doc.pdf' 'avfs://git/github.com/avfs-io/core/README.md?ref=main'; do cd cli && node dist/index.mjs stat "$addr" | jq '{protocol, isValid}'; done` → 全部 `isValid: true`
 
 ---
 
@@ -320,8 +320,8 @@
 
 - [x] **V2.3.1** 编译通过 ✅
   `cd cli && npx tsc --noEmit`
-- [x] **V2.3.2** `avfs convert avfs://git/github.com/avfs-io/core@v1.0.0/path/file.ts --to-native` → JSON `{cloneUrl, version, filePath}` ✅
-  `cd cli && pnpm build && node dist/index.mjs convert 'avfs://git/github.com/avfs-io/core@v1.0.0/path/file.ts' --to-native | jq '{cloneUrl, version, filePath}'`
+- [x] **V2.3.2** `avfs convert 'avfs://git/github.com/avfs-io/core/path/file.ts?ref=v1.0.0' --to-native` → JSON `{cloneUrl, version, filePath}` ✅
+  `cd cli && pnpm build && node dist/index.mjs convert 'avfs://git/github.com/avfs-io/core/path/file.ts?ref=v1.0.0' --to-native | jq '{cloneUrl, version, filePath}'`
 - [x] **V2.3.3** `avfs convert avfs://file/home/user/config.json --to-native` → `/home/user/config.json` ✅
   `cd cli && pnpm build && node dist/index.mjs convert 'avfs://file/home/user/config.json' --to-native`
 - [x] **V2.3.4** `avfs convert avfs://http/192.168.1.100:8080/api/data.csv --to-native` → `http://192.168.1.100:8080/api/data.csv` ✅
@@ -406,17 +406,17 @@
 
 #### 验证步骤
 
-- [ ] **V3.2.1** 编译通过
+- [x] **V3.2.1** 编译通过 ✅
   `cd cli && npx tsc --noEmit`
-- [ ] **V3.2.2** `avfs fetch avfs://git/github.com/{public-repo}@main/{file}` → stdout 输出文件内容
-  `cd cli && pnpm build && node dist/index.mjs fetch 'avfs://git/github.com/avfs-io/core@main/README.md'`
-- [ ] **V3.2.3** `avfs fetch avfs://git/... -o /tmp/test-out` → 文件写入成功，内容一致
-  `cd cli && pnpm build && node dist/index.mjs fetch 'avfs://git/github.com/avfs-io/core@main/README.md' -o /tmp/test-out && diff /tmp/test-out <expected>`
-- [ ] **V3.2.4** `avfs fetch avfs://file/home/user/config.json` → 报错 "not yet implemented" + exit 1
+- [x] **V3.2.2** `avfs fetch 'avfs://git/github.com/nodejs/node/LICENSE?ref=main'` → stdout 输出文件内容 ✅
+  `cd cli && pnpm build && node dist/index.mjs fetch 'avfs://git/github.com/nodejs/node/LICENSE?ref=main'`
+- [x] **V3.2.3** `avfs fetch avfs://git/... -o /tmp/test-out` → 文件写入成功，内容一致 ✅
+  `cd cli && pnpm build && node dist/index.mjs fetch 'avfs://git/github.com/nodejs/node/LICENSE?ref=main' -o /tmp/test-out && diff /tmp/test-out <expected>`
+- [x] **V3.2.4** `avfs fetch avfs://file/home/user/config.json` → 报错 "not yet implemented" + exit 1 ✅
   `cd cli && pnpm build && node dist/index.mjs fetch 'avfs://file/home/user/config.json' 2>&1; echo "exit=$?"`
-- [ ] **V3.2.5** 不存在的文件 → 友好错误提示（404 → "File not found"）
-  `cd cli && pnpm build && node dist/index.mjs fetch 'avfs://git/github.com/avfs-io/core@main/nonexistent.xyz' 2>&1`
-- [ ] **V3.2.6** fetch 命令单元测试全部通过（正常路径、-o 输出、非 git 报错）
+- [x] **V3.2.5** 不存在的文件 → 友好错误提示（404 → "File not found"）✅
+  `cd cli && pnpm build && node dist/index.mjs fetch 'avfs://git/github.com/avfs-io/core/nonexistent.xyz?ref=main' 2>&1`
+- [x] **V3.2.6** fetch 命令单元测试全部通过（正常路径、-o 输出、非 git 报错）✅
   `cd cli && npx vitest run test/commands/fetch.test.ts --reporter=verbose`
 
 ---
@@ -440,32 +440,46 @@
 2. 安装 `@vitest/coverage-v8`
 3. 添加 `"test:coverage": "vitest run --coverage"` 到 `cli/package.json` 的 scripts
 4. 运行全量测试并确认覆盖率达标
-5. 验证 `pnpm test:coverage` 在 CI 中通过
+5. 更新 `.github/workflows/avfs-cli-ci.yml` GitHub Actions CI 工作流（保留原有风格）：
+   - **test-and-coverage** job：Node 20 + 22 矩阵测试，运行 `pnpm test:coverage`，上传覆盖率 artifact
+   - **typecheck** job：`tsc --noEmit` 严格编译检查
+   - **build** job：验证 `pnpm build` 构建产物存在
+   - **ci-gate** job (PR Merge Gate)：依赖上述 3 个 job 全部通过，通过 commit status API 报告 `CI / 🔒 PR Merge Gate` 状态，作为 PR 合并的 required check
+   - **coverage-comment** job（PR only）：在 PR 中发布覆盖率摘要
+   - PR 场景 `cancel-in-progress: false`（确保 merge gate 状态准确），push 场景取消旧运行节省资源
+6. 验证 CI 工作流 YAML 格式正确
 
 #### 交付物
 
 - `cli/vitest.config.ts` — Vitest + coverage 配置
 - `cli/package.json` — 更新（新增 test:coverage script + @vitest/coverage-v8 依赖）
+- `.github/workflows/avfs-cli-ci.yml` — 更新（5 jobs: test+coverage / typecheck / build / ci-gate merge gate / PR coverage comment）
 - 覆盖率报告 ≥ 阈值（Lines ≥90%, Branches ≥85%, Functions ≥90%, Statements ≥90%）
 
 #### 验证步骤
 
-- [ ] **V3.3.1** `@vitest/coverage-v8` 安装成功
+- [x] **V3.3.1** `@vitest/coverage-v8` 安装成功 ✅
   `cd cli && pnpm ls @vitest/coverage-v8` → 输出版本号
-- [ ] **V3.3.2** `pnpm test` 全量测试通过（包括 FT-001 已有测试）
+- [x] **V3.3.2** `pnpm test` 全量测试通过（包括 FT-001 已有测试） ✅
   `cd cli && pnpm test`
-- [ ] **V3.3.3** `pnpm test:coverage` 覆盖率 Lines ≥ 90%
-  `cd cli && pnpm test:coverage 2>&1 | grep -A5 "Lines"`
-- [ ] **V3.3.4** `pnpm test:coverage` 覆盖率 Branches ≥ 85%
-  `cd cli && pnpm test:coverage 2>&1 | grep -A5 "Branches"`
-- [ ] **V3.3.5** `pnpm test:coverage` 覆盖率 Functions ≥ 90%
-  `cd cli && pnpm test:coverage 2>&1 | grep -A5 "Functions"`
-- [ ] **V3.3.6** `pnpm test:coverage` 覆盖率 Statements ≥ 90%
-  `cd cli && pnpm test:coverage 2>&1 | grep -A5 "Statements"`
-- [ ] **V3.3.7** TypeScript strict 编译零错误
+- [x] **V3.3.3** `pnpm test:coverage` 覆盖率 Lines ≥ 90% ✅
+  `cd cli && pnpm test:coverage 2>&1 | grep -A5 "Lines"` → 96.66%
+- [x] **V3.3.4** `pnpm test:coverage` 覆盖率 Branches ≥ 85% ✅
+  `cd cli && pnpm test:coverage 2>&1 | grep -A5 "Branches"` → 91.86%
+- [x] **V3.3.5** `pnpm test:coverage` 覆盖率 Functions ≥ 90% ✅
+  `cd cli && pnpm test:coverage 2>&1 | grep -A5 "Functions"` → 100%
+- [x] **V3.3.6** `pnpm test:coverage` 覆盖率 Statements ≥ 90% ✅
+  `cd cli && pnpm test:coverage 2>&1 | grep -A5 "Statements"` → 96.66%
+- [x] **V3.3.7** TypeScript strict 编译零错误 ✅
   `cd cli && npx tsc --noEmit`
-- [ ] **V3.3.8** 零新增运行时依赖（仅新增 devDependencies）
+- [x] **V3.3.8** 零新增运行时依赖（仅新增 devDependencies） ✅
   `cd cli && pnpm ls --prod | grep -c .` → 与 FT-001 一致
+- [x] **V3.3.9** GitHub Actions CI 工作流更新成功 ✅
+  `.github/workflows/avfs-cli-ci.yml` 已更新，YAML 格式正确（5 jobs: test-and-coverage / typecheck / build / ci-gate merge gate / coverage-comment）
+- [x] **V3.3.10** CI 工作流包含覆盖率统计 ✅
+  test-and-coverage job 运行 `pnpm test:coverage`（v8 provider + 阈值强制检查）+ 上传 coverage-report artifact + PR coverage comment
+- [x] **V3.3.11** CI 包含 PR Merge Gate ✅
+  ci-gate job 依赖 test-and-coverage + typecheck + build 全部通过，通过 commit status API 报告 `CI / 🔒 PR Merge Gate` 状态，作为 required check 阻断不合格 PR 合并；PR 场景不 cancel-in-progress
 
 ---
 
@@ -522,3 +536,4 @@
 | `cli/test/` | 1, 2, 3 | **新增**：fixtures/ (5 文件) + parser/*.test.ts + drivers/git.driver.test.ts + commands/fetch.test.ts |
 | `cli/vitest.config.ts` | 3 | **新增**：coverage v8 provider + 覆盖率阈值配置 |
 | `cli/package.json` | 3 | **修改**：新增 `test:coverage` script + `@vitest/coverage-v8` devDependency |
+| `.github/workflows/avfs-cli-ci.yml` | 3 | **更新**：GitHub Actions CI 工作流（4 jobs: test+coverage / typecheck / build / PR coverage comment）|
