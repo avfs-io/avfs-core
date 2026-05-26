@@ -108,10 +108,9 @@ AVFS (Agent Virtual File System) 是一个通用跨存储寻址协议 — 为 AI
 | 指标 | 数值 |
 |------|------|
 | 规划中特性 | 0 |
-| 实现中特性 | 0 |
+| 实现中特性 | 1 |
 | 已实现特性 | 1 |
 | 澄清中特性 | 0 |
-| 设计中特性 | 1 |
 | 设计中特性 | 0 |
 
 ### 迭代里程碑
@@ -150,7 +149,7 @@ AVFS (Agent Virtual File System) 是一个通用跨存储寻址协议 — 为 AI
 | 编号 | 特性名称 | 优先级 | 状态 | 说明 |
 |:----:|----------|:------:|:----:|------|
 | FT-001 | [CLI 基础框架](./feat/FT-001-cli-foundation/FT-001-cli-foundation-Plan.md) | P1 | ✅ 已实现 | 搭建 CLI 基础骨架，Mock 全部子命令入口，实现 help/version，Driver 暂存 CLI 内，含 GitHub Actions CI/CD |
-| FT-002 | [Git 地址解析](./feat/FT-002-git-address-parsing/FT-002-git-address-parsing-PRD.md) | P1 | 🟠 设计中 | 全协议地址解析器 + Git 原生 URL 转换 + GitHub API Driver + validate/stat/convert/fetch 全激活 |
+| FT-002 | [Git 地址解析](./feat/FT-002-git-address-parsing/FT-002-git-address-parsing-Plan.md) | P1 | 🟡 实现中 | 全协议地址解析器 + Git 原生 URL 转换 + GitHub API Driver + validate/stat/convert/fetch 全激活 |
 
 ---
 

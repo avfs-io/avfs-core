@@ -1,0 +1,85 @@
+{
+  "meta": {
+    "description": "Git 平台检测测试用例 — 验证 GitPlatform.detect() 正确识别 GitHub / unknown",
+    "version": "1.0.0",
+    "protocols": ["git"]
+  },
+  "testCases": [
+    {
+      "id": "platform-01",
+      "description": "GitHub HTTPS clone URL → platform=github",
+      "input": "https://github.com/avfs-io/core.git",
+      "expected": {
+        "platform": "github",
+        "resourceBase": "github.com/avfs-io/core"
+      },
+      "tags": ["github", "https"]
+    },
+    {
+      "id": "platform-02",
+      "description": "GitHub HTTPS（无 .git）→ platform=github",
+      "input": "https://github.com/avfs-io/core",
+      "expected": {
+        "platform": "github",
+        "resourceBase": "github.com/avfs-io/core"
+      },
+      "tags": ["github", "https", "no-dot-git"]
+    },
+    {
+      "id": "platform-03",
+      "description": "GitHub SSH URL → platform=github",
+      "input": "git@github.com:avfs-io/core.git",
+      "expected": {
+        "platform": "github",
+        "resourceBase": "github.com/avfs-io/core"
+      },
+      "tags": ["github", "ssh"]
+    },
+    {
+      "id": "platform-04",
+      "description": "非 GitHub HTTPS URL → platform=unknown",
+      "input": "https://gitlab.com/org/repo.git",
+      "expected": {
+        "platform": "unknown"
+      },
+      "tags": ["unknown", "gitlab", "https"]
+    },
+    {
+      "id": "platform-05",
+      "description": "非 GitHub SSH URL → platform=unknown",
+      "input": "git@bitbucket.org:org/repo.git",
+      "expected": {
+        "platform": "unknown"
+      },
+      "tags": ["unknown", "ssh", "bitbucket"]
+    },
+    {
+      "id": "platform-06",
+      "description": "普通 HTTPS URL（非 git 仓库）→ platform=unknown",
+      "input": "https://aws.amazon.com/s3/bucket/key",
+      "expected": {
+        "platform": "unknown"
+      },
+      "tags": ["unknown", "https", "non-git"]
+    },
+    {
+      "id": "platform-07",
+      "description": "裸引用 github.com/org/repo → platform=unknown（需 --protocol 显式指定）",
+      "input": "github.com/avfs-io/core",
+      "expected": {
+        "platform": "unknown"
+      },
+      "tags": ["unknown", "bare-reference"]
+    },
+    {
+      "id": "platform-08",
+      "description": "GitHub HTTPS（含 resourceBase 提取验证，无 .git）",
+      "input": "https://github.com/avfs-io/core.git",
+      "expected": {
+        "platform": "github",
+        "resourceBase": "github.com/avfs-io/core"
+      },
+      "tags": ["github", "https", "resource-base-extract"]
+    }
+  ]
+}

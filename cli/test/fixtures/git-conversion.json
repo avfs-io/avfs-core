@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "description": "Git 原生 URL ↔ AVFS 双向转换对 — 用于验证 ProtocolConverter.toAvfs() 和 toNative()",
+    "version": "1.0.0",
+    "protocols": ["git"]
+  },
+  "testCases": [
+    {
+      "id": "conv-01",
+      "description": "GitHub HTTPS clone URL（含 .git 后缀）→ AVFS",
+      "input": "https://github.com/avfs-io/core.git",
+      "expected": {
+        "native": "https://github.com/avfs-io/core.git",
+        "avfs": "avfs://git/github.com/avfs-io/core",
+        "resourceBase": "github.com/avfs-io/core"
+      },
+      "tags": ["https", "dot-git"]
+    },
+    {
+      "id": "conv-02",
+      "description": "GitHub HTTPS clone URL（不含 .git 后缀）→ AVFS",
+      "input": "https://github.com/avfs-io/core",
+      "expected": {
+        "native": "https://github.com/avfs-io/core",
+        "avfs": "avfs://git/github.com/avfs-io/core",
+        "resourceBase": "github.com/avfs-io/core"
+      },
+      "tags": ["https", "no-dot-git"]
+    },
+    {
+      "id": "conv-03",
+      "description": "GitHub HTTPS clone URL（含子路径）→ AVFS",
+      "input": "https://github.com/avfs-io/core.git/path/file.ts",
+      "expected": {
+        "native": "https://github.com/avfs-io/core.git/path/file.ts",
+        "avfs": "avfs://git/github.com/avfs-io/core",
+        "resourceBase": "github.com/avfs-io/core"
+      },
+      "tags": ["https", "dot-git", "subpath"]
+    },
+    {
+      "id": "conv-04",
+      "description": "GitHub SSH URL（含 .git 后缀）→ AVFS",
+      "input": "git@github.com:avfs-io/core.git",
+      "expected": {
+        "native": "git@github.com:avfs-io/core.git",
+        "avfs": "avfs://git/github.com/avfs-io/core",
+        "resourceBase": "github.com/avfs-io/core"
+      },
+      "tags": ["ssh", "dot-git"]
+    },
+    {
+      "id": "conv-05",
+      "description": "GitHub SSH URL（不含 .git 后缀）→ AVFS",
+      "input": "git@github.com:avfs-io/core",
+      "expected": {
+        "native": "git@github.com:avfs-io/core",
+        "avfs": "avfs://git/github.com/avfs-io/core",
+        "resourceBase": "github.com/avfs-io/core"
+      },
+      "tags": ["ssh", "no-dot-git"]
+    },
+    {
+      "id": "conv-06",
+      "description": "GitHub SSH URL（含子路径）→ AVFS",
+      "input": "git@github.com:avfs-io/core.git/src/main.ts",
+      "expected": {
+        "native": "git@github.com:avfs-io/core.git/src/main.ts",
+        "avfs": "avfs://git/github.com/avfs-io/core",
+        "resourceBase": "github.com/avfs-io/core"
+      },
+      "tags": ["ssh", "dot-git", "subpath"]
+    },
+    {
+      "id": "conv-07",
+      "description": "GitHub HTTPS（含 .git + 无子路径标签）",
+      "input": "https://github.com/microsoft/vscode.git",
+      "expected": {
+        "native": "https://github.com/microsoft/vscode.git",
+        "avfs": "avfs://git/github.com/microsoft/vscode",
+        "resourceBase": "github.com/microsoft/vscode"
+      },
+      "tags": ["https", "dot-git", "third-party"]
+    },
+    {
+      "id": "conv-08",
+      "description": "GitHub HTTPS（不含 .git + 组织/仓库格式）",
+      "input": "https://github.com/facebook/react",
+      "expected": {
+        "native": "https://github.com/facebook/react",
+        "avfs": "avfs://git/github.com/facebook/react",
+        "resourceBase": "github.com/facebook/react"
+      },
+      "tags": ["https", "no-dot-git", "third-party"]
+    }
+  ]
+}

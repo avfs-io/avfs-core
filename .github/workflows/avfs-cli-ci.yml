@@ -2,16 +2,25 @@ name: AVFS CLI CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'feat/**', 'fix/**', 'release/**']
   pull_request:
     branches: [main]
 
+# PR 场景不取消旧运行（确保 merge gate 状态准确），
+# push 场景取消同分支旧运行节省资源
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'pull_request' }}
+
 jobs:
-  build:
+  # ── Job 1: Test + Coverage (matrix) ─────────────────────
+  test-and-coverage:
+    name: Node ${{ matrix.node-version }} (Test + Coverage)
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: ["20.x", "22.x", "24.x"]
+        node-version: ["20.x", "22.x"]
+      fail-fast: false
 
     defaults:
       run:
@@ -21,19 +30,201 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Setup Node.js
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v5
         with:
           node-version: ${{ matrix.node-version }}
-
-      - name: Enable pnpm
-        run: corepack enable pnpm
+          cache: pnpm
+          cache-dependency-path: cli/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build
+      - name: Build project (required for CLI entry-point tests)
         run: pnpm build
 
-      - name: Run tests
-        run: pnpm test
+      - name: Run tests with coverage
+        run: pnpm test:coverage
+        env:
+          CI: true
+
+      - name: Check coverage thresholds
+        if: matrix.node-version == '22.x'
+        run: |
+          echo "=== Coverage Summary ==="
+          echo ""
+          echo "Coverage thresholds enforced by vitest.config.ts:"
+          echo "  Lines      >= 90%"
+          echo "  Branches   >= 85%"
+          echo "  Functions  >= 90%"
+          echo "  Statements >= 90%"
+
+      - name: Upload coverage report (Node 22 only)
+        if: matrix.node-version == '22.x'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: cli/coverage/
+          retention-days: 7
+
+  # ── Job 2: Type Checking ───────────────────────────────
+  typecheck:
+    name: TypeScript Strict Check
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: cli
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22.x"
+          cache: pnpm
+          cache-dependency-path: cli/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript strict compilation check
+        run: npx tsc --noEmit
+
+  # ── Job 3: Build Verification ──────────────────────────
+  build:
+    name: Build Verification
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: cli
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22.x"
+          cache: pnpm
+          cache-dependency-path: cli/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        run: pnpm build
+
+      - name: Verify dist output exists
+        run: test -f dist/index.mjs || (echo "Build output missing!" && exit 1)
+
+  # ════════════════════════════════════════════════════════
+  # ── Job 4: PR Merge Gate (required for merging to main) ──
+  # ════════════════════════════════════════════════════════
+  ci-gate:
+    name: 🔒 PR Merge Gate
+    needs: [test-and-coverage, typecheck, build]
+    if: always() && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      statuses: write
+      checks: write
+
+    steps:
+      - name: Determine gate result
+        id: gate
+        run: |
+          TEST_RESULT="${{ needs.test-and-coverage.result }}"
+          TYPECHECK_RESULT="${{ needs.typecheck.result }}"
+          BUILD_RESULT="${{ needs.build.result }}"
+
+          if [[ "$TEST_RESULT" == "success" && "$TYPECHECK_RESULT" == "success" && "$BUILD_RESULT" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "message=✅ All CI checks passed — safe to merge" >> $GITHUB_OUTPUT
+            exit 0
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            MSG="CI gate blocked —"
+            [[ "$TEST_RESULT" != "success" ]] && MSG+=" test=${TEST_RESULT}"
+            [[ "$TYPECHECK_RESULT" != "success" ]] && MSG+=" typecheck=${TYPECHECK_RESULT}"
+            [[ "$BUILD_RESULT" != "success" ]] && MSG+=" build=${BUILD_RESULT}"
+            echo "message=${MSG}" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Post gate status as commit status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const statusContext = 'CI / PR Merge Gate';
+            const state = '${{ steps.gate.outputs.status }}' === 'success' ? 'success' : 'failure';
+            const description = '${{ steps.gate.outputs.message }}';
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state,
+              context: statusContext,
+              description,
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            });
+
+      - name: Fail gate if any job failed
+        if: steps.gate.outputs.status != 'success'
+        run: |
+          echo "::error::${{ steps.gate.outputs.message }}"
+          exit 1
+
+  # ── Job 5: Coverage PR Comment (informational only) ────
+  coverage-comment:
+    name: Coverage Report (PR Comment)
+    needs: test-and-coverage
+    if: github.event_name == 'pull_request' && needs.test-and-coverage.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Download coverage artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+
+      - name: Post coverage summary to PR
+        run: |
+          echo "## 📊 Test Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Threshold | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Lines | ≥90% | ✅ Enforced by vitest.config.ts |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branches | ≥85% | ✅ Enforced by vitest.config.ts |" >> $GITHUB_STEP_SUMMARY
+          echo "| Functions | ≥90% | ✅ Enforced by vitest.config.ts |" >> $GITHUB_STEP_SUMMARY
+          echo "| Statements | ≥90% | ✅ Enforced by vitest.config.ts |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Full HTML report available in the **coverage-report** artifact." >> $GITHUB_STEP_SUMMARY

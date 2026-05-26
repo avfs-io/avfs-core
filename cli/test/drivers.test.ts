@@ -26,27 +26,47 @@ describe('Drivers', () => {
       it('should implement connect method', async () => {
         expect(instance.connect).toBeDefined();
         expect(typeof instance.connect).toBe('function');
-        await expect(instance.connect('test')).rejects.toThrow(
-          'Not implemented',
-        );
+        // GitDriver validates resourceBase format; others throw 'Not implemented'
+        if (name === 'GitDriver') {
+          await expect(instance.connect('test')).rejects.toThrow(
+            /Invalid Git resourceBase format/,
+          );
+        } else {
+          await expect(instance.connect('test')).rejects.toThrow(
+            'Not implemented',
+          );
+        }
       });
 
       it('should implement read method', async () => {
         expect(instance.read).toBeDefined();
         expect(typeof instance.read).toBe('function');
-        await expect(instance.read('test')).rejects.toThrow('Not implemented');
+        if (name === 'GitDriver') {
+          await expect(instance.read('test')).rejects.toThrow(/not connected/);
+        } else {
+          await expect(instance.read('test')).rejects.toThrow('Not implemented');
+        }
       });
 
       it('should implement stat method', async () => {
         expect(instance.stat).toBeDefined();
         expect(typeof instance.stat).toBe('function');
-        await expect(instance.stat('test')).rejects.toThrow('Not implemented');
+        if (name === 'GitDriver') {
+          await expect(instance.stat('test')).rejects.toThrow(/not connected/);
+        } else {
+          await expect(instance.stat('test')).rejects.toThrow('Not implemented');
+        }
       });
 
       it('should implement close method', async () => {
         expect(instance.close).toBeDefined();
         expect(typeof instance.close).toBe('function');
-        await expect(instance.close()).rejects.toThrow('Not implemented');
+        // GitDriver.close() succeeds as a no-op; others throw 'Not implemented'
+        if (name === 'GitDriver') {
+          await instance.close();
+        } else {
+          await expect(instance.close()).rejects.toThrow('Not implemented');
+        }
       });
     });
   }
