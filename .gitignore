@@ -4,3 +4,7 @@
 
 # CodeBuddy commands & rules
 .codebuddy/
+
+# Test coverage reports (vitest output)
+cli/coverage/
+node_modules/
