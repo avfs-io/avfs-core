@@ -39,8 +39,17 @@ export class HttpsConverter implements ProtocolConverter {
     };
   }
 
-  /** Not yet implemented — will be done in task 2.3 */
-  toNative(_parsed: ParsedAddress): NativeUrl {
-    throw new Error('https-converter.toNative() not yet implemented');
+  /**
+   * Convert AVFS URI → HTTPS URL.
+   *
+   * Reconstructs the original https:// URL from resourceBase + filePath.
+   *
+   * Examples:
+   *   avfs://https/cdn.example.com/files/v1/package.zip  → https://cdn.example.com/files/v1/package.zip
+   *   avfs://https/example.com/index.html                 → https://example.com/index.html
+   */
+  toNative(parsed: ParsedAddress): NativeUrl {
+    const url = `https://${parsed.resourceBase}/${parsed.filePath}`;
+    return { url, protocol: 'https' };
   }
 }

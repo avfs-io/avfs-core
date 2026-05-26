@@ -74,9 +74,42 @@ export class GitConverter implements ProtocolConverter {
     };
   }
 
-  /** Not yet implemented — will be done in task 2.3 */
-  toNative(_parsed: ParsedAddress): NativeUrl {
-    throw new Error('git-converter.toNative() not yet implemented');
+  /**
+   * Convert AVFS URI → native Git URL (clone URL).
+   *
+   * Uses PlatformRegistry to detect platform and buildCloneUrl().
+   * Returns a structured result with cloneUrl, version, and filePath.
+   *
+   * Examples:
+   *   avfs://git/github.com/avfs-io/core@v1.0.0/path/file.ts
+   *     → { url: "https://github.com/avfs-io/core.git",
+   *          metadata: { cloneUrl: "https://github.com/avfs-io/core.git",
+   *                      version: "v1.0.0",
+   *                      filePath: "path/file.ts" } }
+   */
+  toNative(parsed: ParsedAddress): NativeUrl {
+    // Try to find a registered platform that can build the clone URL
+    let cloneUrl: string;
+
+    // Check if resourceBase starts with a known platform host pattern
+    const platformType = this.platformRegistry.detectPlatformByResourceBase(parsed.resourceBase);
+    if (platformType !== 'unknown') {
+      const platform = this.platformRegistry.getPlatform(platformType);
+      cloneUrl = platform!.buildCloneUrl(parsed.resourceBase);
+    } else {
+      // Fallback: generic HTTPS .git URL construction
+      cloneUrl = `https://${parsed.resourceBase}.git`;
+    }
+
+    return {
+      url: cloneUrl,
+      protocol: 'git',
+      metadata: {
+        cloneUrl,
+        version: parsed.version,
+        filePath: parsed.filePath,
+      },
+    };
   }
 
   /**

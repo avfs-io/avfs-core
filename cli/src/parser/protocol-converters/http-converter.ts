@@ -39,8 +39,17 @@ export class HttpConverter implements ProtocolConverter {
     };
   }
 
-  /** Not yet implemented — will be done in task 2.3 */
-  toNative(_parsed: ParsedAddress): NativeUrl {
-    throw new Error('http-converter.toNative() not yet implemented');
+  /**
+   * Convert AVFS URI → HTTP URL.
+   *
+   * Reconstructs the original http:// URL from resourceBase + filePath.
+   *
+   * Examples:
+   *   avfs://http/192.168.1.100:8080/api/data.csv  → http://192.168.1.100:8080/api/data.csv
+   *   avfs://http/example.com/data.csv             → http://example.com/data.csv
+   */
+  toNative(parsed: ParsedAddress): NativeUrl {
+    const url = `http://${parsed.resourceBase}/${parsed.filePath}`;
+    return { url, protocol: 'http' };
   }
 }

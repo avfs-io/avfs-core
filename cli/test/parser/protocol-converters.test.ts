@@ -3,6 +3,7 @@ import { FileConverter } from '../../src/parser/protocol-converters/file-convert
 import { HttpConverter } from '../../src/parser/protocol-converters/http-converter.js';
 import { HttpsConverter } from '../../src/parser/protocol-converters/https-converter.js';
 import { SmbConverter } from '../../src/parser/protocol-converters/smb-converter.js';
+import { GitConverter } from '../../src/parser/protocol-converters/git-converter.js';
 import type { ParsedAddress } from '../../src/parser/types.js';
 
 // ── Shared helper ──
@@ -286,5 +287,262 @@ describe('SmbConverter', () => {
       // No backslashes in filePath
       expect(result.filePath).not.toContain('\\');
     });
+  });
+});
+
+// ── toNative() Tests (Task 2.3) ──
+
+describe('FileConverter.toNative()', () => {
+  const converter = new FileConverter();
+
+  it('Unix path → reconstructs original absolute path', () => {
+    const parsed: ParsedAddress = {
+      protocol: 'file',
+      resourceBase: 'home',
+      version: null,
+      filePath: 'user/config.json',
+      anchor: null,
+      rawInput: '',
+      isValid: true,
+      errors: [],
+    };
+    const result = converter.toNative(parsed);
+    expect(result.url).toBe('/home/user/config.json');
+    expect(result.protocol).toBe('file');
+  });
+
+  it('home directory path → reconstructs ~/path', () => {
+    const parsed: ParsedAddress = {
+      protocol: 'file',
+      resourceBase: '~',
+      version: null,
+      filePath: 'projects/avfs',
+      anchor: null,
+      rawInput: '',
+      isValid: true,
+      errors: [],
+    };
+    const result = converter.toNative(parsed);
+    expect(result.url).toBe('~/projects/avfs');
+  });
+
+  it('deep nested path → correct reconstruction', () => {
+    const parsed: ParsedAddress = {
+      protocol: 'file',
+      resourceBase: 'var',
+      version: null,
+      filePath: 'log/app/error.log',
+      anchor: null,
+      rawInput: '',
+      isValid: true,
+      errors: [],
+    };
+    const result = converter.toNative(parsed);
+    expect(result.url).toBe('/var/log/app/error.log');
+  });
+});
+
+describe('HttpConverter.toNative()', () => {
+  const converter = new HttpConverter();
+
+  it('HTTP URL with port → reconstructs original URL', () => {
+    const parsed: ParsedAddress = {
+      protocol: 'http',
+      resourceBase: '192.168.1.100:8080',
+      version: null,
+      filePath: 'api/data.csv',
+      anchor: null,
+      rawInput: '',
+      isValid: true,
+      errors: [],
+    };
+    const result = converter.toNative(parsed);
+    expect(result.url).toBe('http://192.168.1.100:8080/api/data.csv');
+    expect(result.protocol).toBe('http');
+  });
+
+  it('HTTP URL without port → correct reconstruction', () => {
+    const parsed: ParsedAddress = {
+      protocol: 'http',
+      resourceBase: 'example.com',
+      version: null,
+      filePath: 'data/file.json',
+      anchor: null,
+      rawInput: '',
+      isValid: true,
+      errors: [],
+    };
+    const result = converter.toNative(parsed);
+    expect(result.url).toBe('http://example.com/data/file.json');
+  });
+});
+
+describe('HttpsConverter.toNative()', () => {
+  const converter = new HttpsConverter();
+
+  it('HTTPS URL with subpath → reconstructs original URL', () => {
+    const parsed: ParsedAddress = {
+      protocol: 'https',
+      resourceBase: 'cdn.example.com',
+      version: null,
+      filePath: 'files/v1/package.zip',
+      anchor: null,
+      rawInput: '',
+      isValid: true,
+      errors: [],
+    };
+    const result = converter.toNative(parsed);
+    expect(result.url).toBe('https://cdn.example.com/files/v1/package.zip');
+    expect(result.protocol).toBe('https');
+  });
+
+  it('simple HTTPS URL → correct reconstruction', () => {
+    const parsed: ParsedAddress = {
+      protocol: 'https',
+      resourceBase: 'example.com',
+      version: null,
+      filePath: 'index.html',
+      anchor: null,
+      rawInput: '',
+      isValid: true,
+      errors: [],
+    };
+    const result = converter.toNative(parsed);
+    expect(result.url).toBe('https://example.com/index.html');
+  });
+});
+
+describe('SmbConverter.toNative()', () => {
+  const converter = new SmbConverter();
+
+  it('AVFS URI → UNC path with backslashes', () => {
+    const parsed: ParsedAddress = {
+      protocol: 'smb',
+      resourceBase: '192.168.1.60',
+      version: null,
+      filePath: 'share/report.xlsx',
+      anchor: null,
+      rawInput: '',
+      isValid: true,
+      errors: [],
+    };
+    const result = converter.toNative(parsed);
+    expect(result.url).toBe('\\\\192.168.1.60\\share\\report.xlsx');
+    expect(result.protocol).toBe('smb');
+  });
+
+  it('deep UNC path → all backslashes', () => {
+    const parsed: ParsedAddress = {
+      protocol: 'smb',
+      resourceBase: '10.0.0.1',
+      version: null,
+      filePath: 'share/docs/doc.pdf',
+      anchor: null,
+      rawInput: '',
+      isValid: true,
+      errors: [],
+    };
+    const result = converter.toNative(parsed);
+    expect(result.url).toBe('\\\\10.0.0.1\\share\\docs\\doc.pdf');
+  });
+});
+
+describe('GitConverter.toNative()', () => {
+  const converter = new GitConverter();
+
+  it('GitHub AVFS URI → cloneUrl + version + filePath metadata', () => {
+    const parsed: ParsedAddress = {
+      protocol: 'git',
+      resourceBase: 'github.com/avfs-io/core',
+      version: 'v1.0.0',
+      filePath: 'src/index.ts',
+      anchor: null,
+      rawInput: '',
+      isValid: true,
+      errors: [],
+    };
+    const result = converter.toNative(parsed);
+    expect(result.url).toBe('https://github.com/avfs-io/core.git');
+    expect(result.protocol).toBe('git');
+    expect(result.metadata).toBeDefined();
+    expect(result.metadata!.cloneUrl).toBe('https://github.com/avfs-io/core.git');
+    expect(result.metadata!.version).toBe('v1.0.0');
+    expect(result.metadata!.filePath).toBe('src/index.ts');
+  });
+
+  it('GitHub AVFS URI without version → metadata has null version', () => {
+    const parsed: ParsedAddress = {
+      protocol: 'git',
+      resourceBase: 'github.com/octocat/hello-world',
+      version: null,
+      filePath: 'README.md',
+      anchor: null,
+      rawInput: '',
+      isValid: true,
+      errors: [],
+    };
+    const result = converter.toNative(parsed);
+    expect(result.url).toBe('https://github.com/octocat/hello-world.git');
+    expect(result.metadata!.version).toBeNull();
+    expect(result.metadata!.filePath).toBe('README.md');
+  });
+
+  it('unknown platform → generic HTTPS .git fallback', () => {
+    const parsed: ParsedAddress = {
+      protocol: 'git',
+      resourceBase: 'gitlab.example.com/org/repo',
+      version: 'main',
+      filePath: 'file.txt',
+      anchor: null,
+      rawInput: '',
+      isValid: true,
+      errors: [],
+    };
+    const result = converter.toNative(parsed);
+    // Fallback: generic https://{resourceBase}.git
+    expect(result.url).toBe('https://gitlab.example.com/org/repo.git');
+    expect(result.metadata!.cloneUrl).toBe('https://gitlab.example.com/org/repo.git');
+  });
+});
+
+// ── Round-trip tests (native → AVFS → native) ──
+
+describe('Round-trip conversion (native → toAvfs → toNative)', () => {
+  it('File: /home/user/config.json round-trip', () => {
+    const fileConv = new FileConverter();
+    const original = '/home/user/config.json';
+    const avfs = fileConv.toAvfs(original);
+    expect(avfs.isValid).toBe(true);
+    const native = fileConv.toNative(avfs);
+    expect(native.url).toBe(original);
+  });
+
+  it('HTTP: http://host:port/path round-trip', () => {
+    const httpConv = new HttpConverter();
+    const original = 'http://192.168.1.100:8080/api/data.csv';
+    const avfs = httpConv.toAvfs(original);
+    expect(avfs.isValid).toBe(true);
+    const native = httpConv.toNative(avfs);
+    expect(native.url).toBe(original);
+  });
+
+  it('HTTPS: https://example.com/file round-trip', () => {
+    const httpsConv = new HttpsConverter();
+    const original = 'https://cdn.example.com/files/v1/package.zip';
+    const avfs = httpsConv.toAvfs(original);
+    expect(avfs.isValid).toBe(true);
+    const native = httpsConv.toNative(avfs);
+    expect(native.url).toBe(original);
+  });
+
+  it('Git: HTTPS clone URL round-trip (toNative returns cloneUrl)', () => {
+    const gitConv = new GitConverter();
+    const original = 'https://github.com/avfs-io/core.git';
+    const avfs = gitConv.toAvfs(original);
+    expect(avfs.isValid).toBe(true);
+    const native = gitConv.toNative(avfs);
+    // Git toNative returns cloneUrl (with .git suffix)
+    expect(native.url).toContain('.git');
+    expect(native.metadata!.cloneUrl).toContain('github.com/avfs-io/core.git');
   });
 });

@@ -48,8 +48,20 @@ export class FileConverter implements ProtocolConverter {
     };
   }
 
-  /** Not yet implemented — will be done in task 2.3 */
-  toNative(_parsed: ParsedAddress): NativeUrl {
-    throw new Error('file-converter.toNative() not yet implemented');
+  /**
+   * Convert AVFS URI → local file path.
+   *
+   * Reconstructs the original filesystem path from resourceBase + filePath.
+   *
+   * Examples:
+   *   avfs://file/home/user/file.txt  → /home/user/file.txt
+   *   avfs://file/C:/Users/alice.doc  → C:/Users/alice.doc
+   *   avfs://file~/projects/app      → ~/projects/app
+   */
+  toNative(parsed: ParsedAddress): NativeUrl {
+    const url = parsed.resourceBase === '~'
+      ? `~/${parsed.filePath}`
+      : `/${parsed.resourceBase}/${parsed.filePath}`;
+    return { url, protocol: 'file' };
   }
 }

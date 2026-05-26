@@ -60,6 +60,28 @@ export class PlatformRegistry {
   }
 
   /**
+   * Detect which platform a resourceBase belongs to.
+   *
+   * Iterates all registered platforms and attempts to build a clone URL.
+   * Returns the name of the first platform whose resourceBase pattern matches
+   * (i.e. buildCloneUrl produces a valid URL).
+   *
+   * For GitHub: resourceBase starting with "github.com/" matches.
+   *
+   * @returns Platform name, or 'unknown' if no platform matches.
+   */
+  detectPlatformByResourceBase(resourceBase: string): GitPlatformType {
+    for (const platform of this.platforms) {
+      // For GitHubPlatform: check if resourceBase starts with "github.com/"
+      if (platform.name === 'github' && resourceBase.startsWith('github.com/')) {
+        return 'github';
+      }
+      // Future platforms can be added here with their own matching logic
+    }
+    return 'unknown';
+  }
+
+  /**
    * Get all registered platform names.
    */
   getRegisteredPlatforms(): GitPlatformType[] {

@@ -1,5 +1,6 @@
 import type { Command } from 'commander';
-import type { ParsedAddress } from '../parser/types.js';
+import type { ParsedAddress, ProtocolType } from '../parser/types.js';
+import { parseAvfsUri } from '../parser/uri-parser.js';
 import { detectProtocol, getConverter } from '../parser/protocol-converters/converter.interface.js';
 import { FileConverter } from '../parser/protocol-converters/file-converter.js';
 import { HttpConverter } from '../parser/protocol-converters/http-converter.js';
@@ -18,6 +19,9 @@ registerConverter(new SmbConverter());
  */
 function buildAvfsUri(result: ParsedAddress): string {
   let uri = `avfs://${result.protocol}/${result.resourceBase}`;
+  if (result.version) {
+    uri += `@${result.version}`;
+  }
   if (result.filePath) {
     uri += `/${result.filePath}`;
   }
@@ -30,7 +34,7 @@ export function registerConvertCommand(program: Command): void {
     .description('Convert between AVFS address and native path/URL')
     .argument('<path>', 'Path or AVFS address to convert')
     .option('--to-avfs', 'Convert native path/URL to AVFS format')
-    .option('--to-native', 'Convert AVFS format to native path/URL (not yet implemented)')
+    .option('--to-native', 'Convert AVFS format to native path/URL')
     .action((path: string, options: { toAvfs?: boolean; toNative?: boolean }) => {
       // Validate: --to-avfs and --to-native are mutually exclusive
       if (options.toAvfs && options.toNative) {
@@ -38,17 +42,17 @@ export function registerConvertCommand(program: Command): void {
         process.exit(1);
       }
 
-      // --to-native not implemented yet
-      if (options.toNative) {
-        console.log('--to-native is not yet implemented');
-        return;
+      // Default direction: auto-detect based on input format
+      if (!options.toAvfs && !options.toNative) {
+        // If input starts with avfs://, default to --to-native
+        if (path.startsWith('avfs://')) {
+          options.toNative = true;
+        } else {
+          options.toAvfs = true;
+        }
       }
 
-      // Default to --to-avfs if no flag specified (auto-detect)
-      if (!options.toAvfs) {
-        options.toAvfs = true;
-      }
-
+      // ── --to-avfs path ──
       if (options.toAvfs) {
         const protocol = detectProtocol(path);
         if (!protocol) {
@@ -70,6 +74,34 @@ export function registerConvertCommand(program: Command): void {
 
         const avfsUri = buildAvfsUri(result);
         console.log(avfsUri);
+        return;
+      }
+
+      // ─--to-native path ──
+      if (options.toNative) {
+        // Parse as AVFS URI first
+        const parsed = parseAvfsUri(path);
+        if (!parsed.isValid) {
+          console.error(`Error: Invalid AVFS URI: ${parsed.errors.join(', ')}`);
+          process.exit(1);
+        }
+
+        const converter = getConverter(parsed.protocol as ProtocolType);
+        if (!converter) {
+          console.error(`Error: No converter registered for protocol: ${parsed.protocol}`);
+          process.exit(1);
+        }
+
+        const nativeResult = converter.toNative(parsed);
+
+        // Git protocol outputs JSON (contains metadata)
+        if (parsed.protocol === 'git') {
+          console.log(JSON.stringify(nativeResult.metadata ?? { url: nativeResult.url }, null, 2));
+        } else {
+          // Other protocols output plain text
+          console.log(nativeResult.url);
+        }
+        return;
       }
     });
 }

@@ -31,7 +31,7 @@
 | 1 | 1.3 协议转换器 (file/http/https/smb) + stat 命令激活 | ✅ | 4 个 converter + `converter.interface.ts` + 修改 `stat.command.ts` |
 | 2 | 2.1 Git 平台检测模块 | ✅ | `git-platform.interface.ts`, `github-platform.ts`, `platform-registry.ts` |
 | 2 | 2.2 Git 转换器 + convert --to-avfs | ✅ | `git-converter.ts` + 修改 `convert.command.ts`（--to-avfs 方向）|
-| 2 | 2.3 convert --to-native 全协议实现 | ⏳ | 所有 converter 的 `toNative()` 方法 + convert 命令补全 |
+| 2 | 2.3 convert --to-native 全协议实现 | ✅ | 所有 converter 的 `toNative()` 方法 + convert 命令补全 |
 | 3 | 3.1 GitHub API Driver 实现 | ⏳ | 修改 `git.driver.ts`（connect/read/stat/close）|
 | 3 | 3.2 fetch 命令激活 | ⏳ | 修改 `fetch.command.ts`（stdout / -o 文件写入）|
 | 3 | 3.3 单元测试 + 覆盖率配置 + CI 验证 | ⏳ | vitest 测试文件 + `@vitest/coverage-v8` 配置 + CI 通过 |
@@ -318,19 +318,19 @@
 
 #### 验证步骤
 
-- [ ] **V2.3.1** 编译通过
+- [x] **V2.3.1** 编译通过 ✅
   `cd cli && npx tsc --noEmit`
-- [ ] **V2.3.2** `avfs convert avfs://git/github.com/avfs-io/core@v1.0.0/path/file.ts --to-native` → JSON `{cloneUrl, version, filePath}`
+- [x] **V2.3.2** `avfs convert avfs://git/github.com/avfs-io/core@v1.0.0/path/file.ts --to-native` → JSON `{cloneUrl, version, filePath}` ✅
   `cd cli && pnpm build && node dist/index.mjs convert 'avfs://git/github.com/avfs-io/core@v1.0.0/path/file.ts' --to-native | jq '{cloneUrl, version, filePath}'`
-- [ ] **V2.3.3** `avfs convert avfs://file/home/user/config.json --to-native` → `/home/user/config.json`
+- [x] **V2.3.3** `avfs convert avfs://file/home/user/config.json --to-native` → `/home/user/config.json` ✅
   `cd cli && pnpm build && node dist/index.mjs convert 'avfs://file/home/user/config.json' --to-native`
-- [ ] **V2.3.4** `avfs convert avfs://http/192.168.1.100:8080/api/data.csv --to-native` → `http://192.168.1.100:8080/api/data.csv`
+- [x] **V2.3.4** `avfs convert avfs://http/192.168.1.100:8080/api/data.csv --to-native` → `http://192.168.1.100:8080/api/data.csv` ✅
   `cd cli && pnpm build && node dist/index.mjs convert 'avfs://http/192.168.1.100:8080/api/data.csv' --to-native`
-- [ ] **V2.3.5** `avfs convert avfs://smb/192.168.1.60/share/report.xlsx --to-native` → UNC 路径
+- [x] **V2.3.5** `avfs convert avfs://smb/192.168.1.60/share/report.xlsx --to-native` → UNC 路径 ✅
   `cd cli && pnpm build && node dist/index.mjs convert 'avfs://smb/192.168.1.60/share/report.xlsx' --to-native`
-- [ ] **V2.3.6** `--to-avfs` 和 `--to-native` 同时指定 → 报错并 exit(1)
+- [x] **V2.3.6** `--to-avfs` 和 `--to-native` 同时指定 → 报错并 exit(1) ✅
   `cd cli && pnpm build && node dist/index.mjs convert '/tmp/test' --to-avfs --to-native 2>&1; echo "exit=$?"`
-- [ ] **V2.3.7** 往返测试通过：原生 → AVFS → 原生结果与输入一致
+- [x] **V2.3.7** 往返测试通过：原生 → AVFS → 原生结果与输入一致 ✅
   `cd cli && npx vitest run test/parser/protocol-converters.test.ts --reporter=verbose`
 
 ---

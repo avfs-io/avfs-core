@@ -3,9 +3,9 @@
   "feature_name": "Git 地址解析",
   "plan_path": ".asdm/workspace/qahc-harness/feat/FT-002-git-address-parsing/FT-002-git-address-parsing-Plan.md",
   "base_commit": "0c7e4ddfb7782088256071b711bc439280e5aa81",
-  "current_phase": 2,
-  "current_task": "2.3",
-  "last_updated": "2026-05-26T13:01:00+08:00",
+  "current_phase": 3,
+  "current_task": "3.1",
+  "last_updated": "2026-05-26T14:04:00+08:00",
   "tasks": {
     "1.1": {
       "name": "测试数据框架 + 核心类型定义",
@@ -201,8 +201,39 @@
       "phase": 2,
       "phase_name": "Git 平台识别与地址双向转换",
       "depends_on": ["2.2"],
-      "status": "pending",
-      "history": []
+      "status": "completed",
+      "history": [
+        {
+          "timestamp": "2026-05-26T13:59:00+08:00",
+          "from": "pending",
+          "to": "in_progress",
+          "reason": "用户确认开始任务 2.3"
+        },
+        {
+          "timestamp": "2026-05-26T14:00:00+08:00",
+          "from": "in_progress",
+          "to": "implemented",
+          "reason": "实现 5 个 converter 的 toNative() 方法 + 补全 convert.command.ts --to-native 路径 + 新增 toNative + round-trip 单元测试"
+        },
+        {
+          "timestamp": "2026-05-26T14:03:00+08:00",
+          "from": "implemented",
+          "to": "verified",
+          "reason": "全部 7 条验证步骤通过：tsc 编译零错误，48 个单元测试全通过（含 16 个新增 toNative/round-trip），CLI 集成 5 协议 toNative + 互斥检查均通过"
+        },
+        {
+          "timestamp": "2026-05-26T14:03:30+08:00",
+          "from": "verified",
+          "to": "human_confirming",
+          "reason": "进入人工确认阶段"
+        },
+        {
+          "timestamp": "2026-05-26T14:04:00+08:00",
+          "from": "human_confirming",
+          "to": "completed",
+          "reason": "用户确认任务完成"
+        }
+      ]
     },
     "3.1": {
       "name": "GitHub API Driver 实现",

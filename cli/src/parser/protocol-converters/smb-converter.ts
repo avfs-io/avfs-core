@@ -47,8 +47,18 @@ export class SmbConverter implements ProtocolConverter {
     };
   }
 
-  /** Not yet implemented — will be done in task 2.3 */
-  toNative(_parsed: ParsedAddress): NativeUrl {
-    throw new Error('smb-converter.toNative() not yet implemented');
+  /**
+   * Convert AVFS URI → SMB UNC path.
+   *
+   * Reconstructs the original UNC path (backslash format) from resourceBase + filePath.
+   *
+   * Examples:
+   *   avfs://smb/192.168.1.60/share/docs/report.xlsx  → \\192.168.1.60\share\docs\report.xlsx
+   *   avfs://smb/server/share/file.txt                → \\server\share\file.txt
+   */
+  toNative(parsed: ParsedAddress): NativeUrl {
+    // Reconstruct UNC path with backslash separators
+    const url = `\\\\${parsed.resourceBase}\\${parsed.filePath?.replace(/\//g, '\\')}`;
+    return { url, protocol: 'smb' };
   }
 }
