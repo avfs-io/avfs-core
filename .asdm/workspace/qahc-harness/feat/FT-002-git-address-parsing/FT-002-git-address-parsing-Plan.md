@@ -27,7 +27,7 @@
 | Phase | 任务 | 状态 | 交付物 |
 | :----: | ------ | :----: | ------ |
 | 1 | 1.1 测试数据框架 + 类型定义 | ✅ | `cli/test/fixtures/` (4 组 JSON) + `cli/src/parser/types.ts` |
-| 1 | 1.2 URI 解析器 + validate 命令激活 | ⏳ | `cli/src/parser/uri-parser.ts`, `validator.ts`, `index.ts` + 修改 `validate.command.ts` |
+| 1 | 1.2 URI 解析器 + validate 命令激活 | ✅ | `cli/src/parser/uri-parser.ts`, `validator.ts`, `index.ts` + 修改 `validate.command.ts` |
 | 1 | 1.3 协议转换器 (file/http/https/smb) + stat 命令激活 | ⏳ | 4 个 converter + `converter.interface.ts` + 修改 `stat.command.ts` |
 | 2 | 2.1 Git 平台检测模块 | ⏳ | `git-platform.interface.ts`, `github-platform.ts`, `platform-registry.ts` |
 | 2 | 2.2 Git 转换器 + convert --to-avfs | ⏳ | `git-converter.ts` + 修改 `convert.command.ts`（--to-avfs 方向）|
@@ -124,19 +124,19 @@
 
 #### 验证步骤
 
-- [ ] **V1.2.1** 编译通过，零 TypeScript 错误
+- [x] **V1.2.1** 编译通过，零 TypeScript 错误 ✅
   `cd cli && npx tsc --noEmit`
-- [ ] **V1.2.2** 合法 git URI 解析正确 → `isValid: true`，字段完整
+- [x] **V1.2.2** 合法 git URI 解析正确 → `isValid: true`，字段完整 ✅
   `cd cli && npx vitest run test/parser/uri-parser.test.ts --reporter=verbose`
-- [ ] **V1.2.3** 非法 URI 解析返回 `isValid: false` + 对应 errors
+- [x] **V1.2.3** 非法 URI 解析返回 `isValid: false` + 对应 errors ✅
   `cd cli && npx vitest run test/parser/uri-parser.test.ts` → 全部通过
-- [ ] **V1.2.4** `avfs validate avfs://git/github.com/avfs-io/core@main/readme.md` → `{"valid":true,...}`
+- [x] **V1.2.4** `avfs validate avfs://git/github.com/avfs-io/core@main/readme.md` → `{"valid":true,...}` ✅
   `cd cli && pnpm build && node dist/index.mjs validate 'avfs://git/github.com/avfs-io/core@main/readme.md'`
-- [ ] **V1.2.5** `avfs validate "not-an-avfs-address"` → `{"valid":false,"errors":[...]}` + exit 1
+- [x] **V1.2.5** `avfs validate "not-an-avfs-address"` → `{"valid":false,"errors":[...]}` + exit 1 ✅
   `cd cli && pnpm build && node dist/index.mjs validate 'not-an-avfs-address' || echo "exit=$?"` → 含 errors 数组
-- [ ] **V1.2.6** 5 协议各 1 个合法地址校验通过
+- [x] **V1.2.6** 5 协议各 1 个合法地址校验通过 ✅
   `for proto in file http https smb git; do cd cli && node dist/index.mjs validate "avfs://$proto/test/path.txt"; done` → 全部 valid:true
-- [ ] **V1.2.7** 边界条件：空输入、仅 `avfs://`、缺少 filePath 的 git URI 均有明确错误
+- [x] **V1.2.7** 边界条件：空输入、仅 `avfs://`、缺少 filePath 的 git URI 均有明确错误 ✅
   `cd cli && npx vitest run test/parser/uri-parser.test.ts` → 边界用例通过
 
 ---

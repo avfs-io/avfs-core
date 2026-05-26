@@ -86,13 +86,13 @@
     },
     {
       "id": "invalid-09",
-      "description": "协议名包含非法字符（大写）",
-      "input": "avfs://FILE/home/user/test.txt",
+      "description": "不支持的协议名（custom-protocol）",
+      "input": "avfs://custom-protocol/home/user/test.txt",
       "expected": {
         "isValid": false,
         "hasError": "Unsupported protocol"
       },
-      "tags": ["protocol", "case-sensitive"]
+      "tags": ["protocol", "custom"]
     },
     {
       "id": "invalid-10",
