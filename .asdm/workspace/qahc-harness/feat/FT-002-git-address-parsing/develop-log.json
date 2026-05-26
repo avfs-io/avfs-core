@@ -4,8 +4,8 @@
   "plan_path": ".asdm/workspace/qahc-harness/feat/FT-002-git-address-parsing/FT-002-git-address-parsing-Plan.md",
   "base_commit": "0c7e4ddfb7782088256071b711bc439280e5aa81",
   "current_phase": 3,
-  "current_task": "3.1",
-  "last_updated": "2026-05-26T14:04:00+08:00",
+  "current_task": "3.2",
+  "last_updated": "2026-05-26T14:17:30+08:00",
   "tasks": {
     "1.1": {
       "name": "测试数据框架 + 核心类型定义",
@@ -240,8 +240,39 @@
       "phase": 3,
       "phase_name": "Git 驱动与文件获取",
       "depends_on": ["2.3"],
-      "status": "pending",
-      "history": []
+      "status": "completed",
+      "history": [
+        {
+          "timestamp": "2026-05-26T14:10:00+08:00",
+          "from": "pending",
+          "to": "in_progress",
+          "reason": "用户确认开始任务 3.1"
+        },
+        {
+          "timestamp": "2026-05-26T14:11:00+08:00",
+          "from": "in_progress",
+          "to": "implemented",
+          "reason": "重写 git.driver.ts（stub → GitHub REST API Driver：connect/read/stat/close + 错误处理 404/403/超时）+ 创建 git.driver.test.ts（connect/stat/read/close/workflow/network 全覆盖）"
+        },
+        {
+          "timestamp": "2026-05-26T14:13:00+08:00",
+          "from": "implemented",
+          "to": "verified",
+          "reason": "全部 6 条验证步骤通过：tsc 编译零错误，24 个单元测试全通过（connect 6 + stat 7 + read 6 + close 1 + workflow 1 + network 3），404/403/超时错误场景全覆盖"
+        },
+        {
+          "timestamp": "2026-05-26T14:17:00+08:00",
+          "from": "verified",
+          "to": "human_confirming",
+          "reason": "进入人工确认阶段"
+        },
+        {
+          "timestamp": "2026-05-26T14:17:30+08:00",
+          "from": "human_confirming",
+          "to": "completed",
+          "reason": "用户确认任务完成"
+        }
+      ]
     },
     "3.2": {
       "name": "fetch 命令激活",

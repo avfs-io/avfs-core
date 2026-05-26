@@ -32,7 +32,7 @@
 | 2 | 2.1 Git 平台检测模块 | ✅ | `git-platform.interface.ts`, `github-platform.ts`, `platform-registry.ts` |
 | 2 | 2.2 Git 转换器 + convert --to-avfs | ✅ | `git-converter.ts` + 修改 `convert.command.ts`（--to-avfs 方向）|
 | 2 | 2.3 convert --to-native 全协议实现 | ✅ | 所有 converter 的 `toNative()` 方法 + convert 命令补全 |
-| 3 | 3.1 GitHub API Driver 实现 | ⏳ | 修改 `git.driver.ts`（connect/read/stat/close）|
+| 3 | 3.1 GitHub API Driver 实现 | ✅ | 修改 `git.driver.ts`（connect/read/stat/close）|
 | 3 | 3.2 fetch 命令激活 | ⏳ | 修改 `fetch.command.ts`（stdout / -o 文件写入）|
 | 3 | 3.3 单元测试 + 覆盖率配置 + CI 验证 | ⏳ | vitest 测试文件 + `@vitest/coverage-v8` 配置 + CI 通过 |
 
@@ -370,17 +370,17 @@
 
 #### 验证步骤
 
-- [ ] **V3.1.1** 编译通过
+- [x] **V3.1.1** 编译通过 ✅
   `cd cli && npx tsc --noEmit`
-- [ ] **V3.1.2** `connect("github.com/avfs-io/core")` → 正确解析 owner/repo，无异常
+- [x] **V3.1.2** `connect("github.com/avfs-io/core")` → 正确解析 owner/repo，无异常 ✅
   `cd cli && npx vitest run test/drivers/git.driver.test.ts --reporter=verbose`
-- [ ] **V3.1.3** `stat("README.md")` → 返回 FileMetadata（含 size、mimeType、protocol）
+- [x] **V3.1.3** `stat("README.md")` → 返回 FileMetadata（含 size、mimeType、protocol） ✅
   `cd cli && npx vitest run test/drivers/git.driver.test.ts` → stat 用例通过
-- [ ] **V3.1.4** `read("README.md")` → 返回 ReadableStream，内容与 mock 一致
+- [x] **V3.1.4** `read("README.md")` → 返回 ReadableStream，内容与 mock 一致 ✅
   `cd cli && npx vitest run test/drivers/git.driver.test.ts` → read 用例通过
-- [ ] **V3.1.5** API 返回 404 → 错误信息含 "File not found" + 路径
+- [x] **V3.1.5** API 返回 404 → 错误信息含 "File not found" + 路径 ✅
   `cd cli && npx vitest run test/drivers/git.driver.test.ts` → 404 错误用例通过
-- [ ] **V3.1.6** API 返回 403 → 错误信息含 "rate limit exceeded"
+- [x] **V3.1.6** API 返回 403 → 错误信息含 "rate limit exceeded" ✅
   `cd cli && npx vitest run test/drivers/git.driver.test.ts` → 403 错误用例通过
 
 ---
