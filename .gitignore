@@ -4,3 +4,6 @@
 
 # CodeBuddy commands & rules
 .codebuddy/
+
+# Test coverage reports
+coverage/
