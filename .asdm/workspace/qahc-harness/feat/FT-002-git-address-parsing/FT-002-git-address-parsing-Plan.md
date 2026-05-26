@@ -2,7 +2,7 @@
 
 > **🔗 前置依赖**：本文档基于 [FT-002-git-address-parsing-PRD.md](./FT-002-git-address-parsing-PRD.md)（产品需求文档）拆解生成。
 
-> 最后更新：2026-05-25
+> 最后更新：2026-05-26
 
 > **📋 开发进度**：[develop-log.json](./develop-log.json) — 任务执行状态与历史记录（由 `/qahc-harness-develop` 驱动更新）
 
@@ -30,7 +30,7 @@
 | 1 | 1.2 URI 解析器 + validate 命令激活 | ✅ | `cli/src/parser/uri-parser.ts`, `validator.ts`, `index.ts` + 修改 `validate.command.ts` |
 | 1 | 1.3 协议转换器 (file/http/https/smb) + stat 命令激活 | ✅ | 4 个 converter + `converter.interface.ts` + 修改 `stat.command.ts` |
 | 2 | 2.1 Git 平台检测模块 | ✅ | `git-platform.interface.ts`, `github-platform.ts`, `platform-registry.ts` |
-| 2 | 2.2 Git 转换器 + convert --to-avfs | ⏳ | `git-converter.ts` + 修改 `convert.command.ts`（--to-avfs 方向）|
+| 2 | 2.2 Git 转换器 + convert --to-avfs | ✅ | `git-converter.ts` + 修改 `convert.command.ts`（--to-avfs 方向）|
 | 2 | 2.3 convert --to-native 全协议实现 | ⏳ | 所有 converter 的 `toNative()` 方法 + convert 命令补全 |
 | 3 | 3.1 GitHub API Driver 实现 | ⏳ | 修改 `git.driver.ts`（connect/read/stat/close）|
 | 3 | 3.2 fetch 命令激活 | ⏳ | 修改 `fetch.command.ts`（stdout / -o 文件写入）|
@@ -273,19 +273,19 @@
 
 #### 验证步骤
 
-- [ ] **V2.2.1** 编译通过
+- [x] **V2.2.1** 编译通过 ✅
   `cd cli && npx tsc --noEmit`
-- [ ] **V2.2.2** `avfs convert https://github.com/avfs-io/core.git --to-avfs` → `avfs://git/github.com/avfs-io/core`
+- [x] **V2.2.2** `avfs convert https://github.com/avfs-io/core.git --to-avfs` → `avfs://git/github.com/avfs-io/core` ✅
   `cd cli && pnpm build && node dist/index.mjs convert 'https://github.com/avfs-io/core.git' --to-avfs`
-- [ ] **V2.2.3** `avfs convert git@github.com:avfs-io/core.git --to-avfs` → `avfs://git/github.com/avfs-io/core`
+- [x] **V2.2.3** `avfs convert git@github.com:avfs-io/core.git --to-avfs` → `avfs://git/github.com/avfs-io/core` ✅
   `cd cli && pnpm build && node dist/index.mjs convert 'git@github.com:avfs-io/core.git' --to-avfs`
-- [ ] **V2.2.4** `avfs convert /home/user/config.json --to-avfs` → `avfs://file/home/user/config.json`
+- [x] **V2.2.4** `avfs convert /home/user/config.json --to-avfs` → `avfs://file/home/user/config.json` ✅
   `cd cli && pnpm build && node dist/index.mjs convert '/home/user/config.json' --to-avfs`
-- [ ] **V2.2.5** `avfs convert https://cdn.example.com/pkg.zip --to-avfs` → `avfs://https/cdn.example.com/pkg.zip`
+- [x] **V2.2.5** `avfs convert https://cdn.example.com/pkg.zip --to-avfs` → `avfs://https/cdn.example.com/pkg.zip` ✅
   `cd cli && pnpm build && node dist/index.mjs convert 'https://cdn.example.com/pkg.zip' --to-avfs`
-- [ ] **V2.2.6** `avfs convert \\\\192.168.1.60\\share\\docs\\report.xlsx --to-avfs` → `avfs://smb/...`
-  `cd cli && pnpm build && node dist/index.mjs convert '\\\\192.168.1.60\\share\\docs\\report.xlsx' --to-avfs`
-- [ ] **V2.2.7** Git converter 单元测试全部通过（HTTPS + SSH + 去 .git 后缀）
+- [x] **V2.2.6** `avfs convert \\\\192.168.1.60\\share\\docs\\report.xlsx --to-avfs` → `avfs://smb/...` ✅
+  `cd cli && pnpm build && node dist/index.mjs convert '\\192.168.1.60\\share\\docs\\report.xlsx' --to-avfs`
+- [x] **V2.2.7** Git converter 单元测试全部通过（HTTPS + SSH + 去 .git 后缀）✅
   `cd cli && npx vitest run test/parser/git-converter.test.ts --reporter=verbose`
 
 ---

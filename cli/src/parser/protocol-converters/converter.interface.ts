@@ -36,7 +36,18 @@ export function registerConverter(converter: ProtocolConverter): void {
  * Returns undefined if not registered.
  */
 export function getConverter(protocol: ProtocolType): ProtocolConverter | undefined {
-  return converterMap.get(protocol);
+  if (converterMap.has(protocol)) {
+    return converterMap.get(protocol);
+  }
+  // Lazy-init GitConverter (deferred require avoids circular deps)
+  if (protocol === 'git') {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { GitConverter } = require('./git-converter.js');
+    const gitConverter = new GitConverter();
+    converterMap.set('git', gitConverter);
+    return gitConverter;
+  }
+  return undefined;
 }
 
 // ── Protocol Detection ──

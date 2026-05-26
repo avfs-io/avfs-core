@@ -4,7 +4,8 @@
   "plan_path": ".asdm/workspace/qahc-harness/feat/FT-002-git-address-parsing/FT-002-git-address-parsing-Plan.md",
   "base_commit": "0c7e4ddfb7782088256071b711bc439280e5aa81",
   "current_phase": 2,
-  "current_task": "2.2",
+  "current_task": "2.3",
+  "last_updated": "2026-05-26T13:01:00+08:00",
   "tasks": {
     "1.1": {
       "name": "测试数据框架 + 核心类型定义",
@@ -161,8 +162,39 @@
       "phase": 2,
       "phase_name": "Git 平台识别与地址双向转换",
       "depends_on": ["2.1"],
-      "status": "pending",
-      "history": []
+      "status": "completed",
+      "history": [
+        {
+          "timestamp": "2026-05-26T12:51:00+08:00",
+          "from": "pending",
+          "to": "in_progress",
+          "reason": "用户确认开始任务 2.2"
+        },
+        {
+          "timestamp": "2026-05-26T12:55:00+08:00",
+          "from": "in_progress",
+          "to": "implemented",
+          "reason": "创建 git-converter.ts + 更新 converter.interface.ts (lazy git init) + 修改 convert.command.ts (--to-avfs) + git-converter.test.ts (24 tests)"
+        },
+        {
+          "timestamp": "2026-05-26T12:58:00+08:00",
+          "from": "implemented",
+          "to": "verified",
+          "reason": "全部 7 条验证步骤通过：tsc 编译零错误，24 个单元测试全通过，CLI 5 协议 convert --to-avfs 均正确输出，fixture-driven 8 个转换用例全通过"
+        },
+        {
+          "timestamp": "2026-05-26T13:01:00+08:00",
+          "from": "verified",
+          "to": "human_confirming",
+          "reason": "进入人工确认阶段"
+        },
+        {
+          "timestamp": "2026-05-26T13:01:00+08:00",
+          "from": "human_confirming",
+          "to": "completed",
+          "reason": "用户确认任务完成"
+        }
+      ]
     },
     "2.3": {
       "name": "convert --to-native 全协议实现",
@@ -196,6 +228,5 @@
       "status": "pending",
       "history": []
     }
-  },
-  "last_updated": "2026-05-26T12:44:00+08:00"
+  }
 }
