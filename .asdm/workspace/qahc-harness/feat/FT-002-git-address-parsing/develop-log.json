@@ -3,8 +3,8 @@
   "feature_name": "Git 地址解析",
   "plan_path": ".asdm/workspace/qahc-harness/feat/FT-002-git-address-parsing/FT-002-git-address-parsing-Plan.md",
   "base_commit": "0c7e4ddfb7782088256071b711bc439280e5aa81",
-  "current_phase": 1,
-  "current_task": "2.1",
+  "current_phase": 2,
+  "current_task": "2.2",
   "tasks": {
     "1.1": {
       "name": "测试数据框架 + 核心类型定义",
@@ -122,8 +122,39 @@
       "phase": 2,
       "phase_name": "Git 平台识别与地址双向转换",
       "depends_on": ["1.3"],
-      "status": "pending",
-      "history": []
+      "status": "completed",
+      "history": [
+        {
+          "timestamp": "2026-05-26T12:18:00+08:00",
+          "from": "pending",
+          "to": "in_progress",
+          "reason": "用户确认开始任务 2.1"
+        },
+        {
+          "timestamp": "2026-05-26T12:19:00+08:00",
+          "from": "in_progress",
+          "to": "implemented",
+          "reason": "创建 git-platform.interface.ts, github-platform.ts, platform-registry.ts + git-platform.test.ts (43 tests)"
+        },
+        {
+          "timestamp": "2026-05-26T12:26:30+08:00",
+          "from": "implemented",
+          "to": "verified",
+          "reason": "全部 6 条验证步骤通过：tsc 编译零错误，43 个单元测试全部通过，fixture-based 8 个用例全通过，动态注册新平台验证通过"
+        },
+        {
+          "timestamp": "2026-05-26T12:27:00+08:00",
+          "from": "verified",
+          "to": "human_confirming",
+          "reason": "进入人工确认阶段"
+        },
+        {
+          "timestamp": "2026-05-26T12:44:00+08:00",
+          "from": "human_confirming",
+          "to": "completed",
+          "reason": "用户确认任务完成"
+        }
+      ]
     },
     "2.2": {
       "name": "Git 转换器 + convert --to-avfs",
@@ -166,5 +197,5 @@
       "history": []
     }
   },
-  "last_updated": "2026-05-26T11:43:00+08:00"
+  "last_updated": "2026-05-26T12:44:00+08:00"
 }

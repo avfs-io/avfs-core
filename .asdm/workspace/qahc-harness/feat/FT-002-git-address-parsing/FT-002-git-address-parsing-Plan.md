@@ -29,7 +29,7 @@
 | 1 | 1.1 测试数据框架 + 类型定义 | ✅ | `cli/test/fixtures/` (4 组 JSON) + `cli/src/parser/types.ts` |
 | 1 | 1.2 URI 解析器 + validate 命令激活 | ✅ | `cli/src/parser/uri-parser.ts`, `validator.ts`, `index.ts` + 修改 `validate.command.ts` |
 | 1 | 1.3 协议转换器 (file/http/https/smb) + stat 命令激活 | ✅ | 4 个 converter + `converter.interface.ts` + 修改 `stat.command.ts` |
-| 2 | 2.1 Git 平台检测模块 | ⏳ | `git-platform.interface.ts`, `github-platform.ts`, `platform-registry.ts` |
+| 2 | 2.1 Git 平台检测模块 | ✅ | `git-platform.interface.ts`, `github-platform.ts`, `platform-registry.ts` |
 | 2 | 2.2 Git 转换器 + convert --to-avfs | ⏳ | `git-converter.ts` + 修改 `convert.command.ts`（--to-avfs 方向）|
 | 2 | 2.3 convert --to-native 全协议实现 | ⏳ | 所有 converter 的 `toNative()` 方法 + convert 命令补全 |
 | 3 | 3.1 GitHub API Driver 实现 | ⏳ | 修改 `git.driver.ts`（connect/read/stat/close）|
@@ -229,17 +229,17 @@
 
 #### 验证步骤
 
-- [ ] **V2.1.1** 编译通过
+- [x] **V2.1.1** 编译通过 ✅
   `cd cli && npx tsc --noEmit`
-- [ ] **V2.1.2** GitHub HTTPS clone URL 检测正确 → platform=github, resourceBase 不含 .git
+- [x] **V2.1.2** GitHub HTTPS clone URL 检测正确 → platform=github, resourceBase 不含 .git ✅
   `cd cli && npx vitest run test/parser/git-platform.test.ts --reporter=verbose`
-- [ ] **V2.1.3** GitHub SSH URL 检测正确 → platform=github, resourceBase 格式正确
+- [x] **V2.1.3** GitHub SSH URL 检测正确 → platform=github, resourceBase 格式正确 ✅
   `cd cli && npx vitest run test/parser/git-platform.test.ts` → SSH 用例通过
-- [ ] **V2.1.4** 非 GitHub HTTPS URL 返回 platform=unknown
+- [x] **V2.1.4** 非 GitHub HTTPS URL 返回 platform=unknown ✅
   `cd cli && npx vitest run test/parser/git-platform.test.ts` → unknown 用例通过
-- [ ] **V2.1.5** `buildCloneUrl("github.com/avfs-io/core")` → `"https://github.com/avfs-io/core.git"`
+- [x] **V2.1.5** `buildCloneUrl("github.com/avfs-io/core")` → `"https://github.com/avfs-io/core.git"` ✅
   `cd cli && npx vitest run test/parser/git-platform.test.ts` → cloneUrl 断言通过
-- [ ] **V2.1.6** platform-registry 支持动态注册新平台
+- [x] **V2.1.6** platform-registry 支持动态注册新平台 ✅
   `cd cli && npx vitest run test/parser/git-platform.test.ts` → 注册表用例通过
 
 ---
