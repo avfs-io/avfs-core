@@ -20,7 +20,7 @@ When using any AI Agent platform (CodeBuddy, Cursor, Claude Code, etc.), you can
 
 1. **Point the agent to the SKILL file** as a context document
 2. **Reference the skill** in your prompt, e.g.:
-   > "Use the avfs-skill to convert `github.com/team/repo@main/docs/api.md` to an AVFS address and fetch its content"
+   > "Use the avfs-skill to convert `github.com/team/repo/docs/api.md?ref=main` to an AVFS address and fetch its content"
 
 The agent will then follow the workflows defined in `SKILL.md` to:
 - Recognize `avfs://` addresses

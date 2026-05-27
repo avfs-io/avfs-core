@@ -69,8 +69,8 @@ Below are the same resources expressed in `avfs://` standard address format:
 | Resource | AVFS Address |
 |----------|-------------|
 | GitHub repo root | `avfs://git/github.com/avfs-io/avfs-core` |
-| This README on main | `avfs://git/github.com/avfs-io/avfs-core@main/spec/README.md` |
-| Main spec on main branch | `avfs://git/github.com/avfs-io/avfs-core@main/spec/avfs-v1-standard.md#introduction` |
-| Address syntax doc | `avfs://git/github.com/avfs-io/avfs-core@main/spec/address-syntax.md#full-syntax-grammar` |
-| Driver interface doc | `avfs://git/github.com/avfs-io/avfs-core@main/spec/driver-interface.md#interface-overview` |
+| This README on main | `avfs://git/github.com/avfs-io/avfs-core/spec/README.md?ref=main` |
+| Main spec on main branch | `avfs://git/github.com/avfs-io/avfs-core/spec/avfs-v1-standard.md?ref=main#introduction` |
+| Address syntax doc | `avfs://git/github.com/avfs-io/avfs-core/spec/address-syntax.md?ref=main#full-syntax-grammar` |
+| Driver interface doc | `avfs://git/github.com/avfs-io/avfs-core/spec/driver-interface.md?ref=main#interface-overview` |
 | Parent ASDM project | `avfs://git/github.com/avfs-io/asdm` |

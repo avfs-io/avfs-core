@@ -116,9 +116,9 @@
 **SMB UNC 格式**：`\\{host}\{share}\{path}`
 
 **算法**：
-1. 从 UNC 中解析 host、share 和子路径
-2. 构建 `resource-base`：`{host}/{share}`
-3. 设置 `file-path`：share 内的子路径
+1. 从 UNC 中解析 host；将反斜杠分隔符统一为 `/`
+2. 构建 `resource-base`：`{host}`（仅主机名或 IP）
+3. 设置 `file-path`：`{share}/{子路径}`（share 名属于 file-path）
 
 **示例**：
 
@@ -126,7 +126,7 @@
 |--------------|-----------|
 | `\\192.168.1.60\share\docs\report.xlsx` | `avfs://smb/192.168.1.60/share/docs/report.xlsx` |
 | `\\office.host\public\media\demo.mp4` | `avfs://smb/office.host/public/media/demo.mp4` |
-| `\\server\data\..\archive\backup.tar.gz` | `avfs://smb/server/data/archive/backup.tar.gz``
+| `\\server\data\..\archive\backup.tar.gz` | `avfs://smb/server/data/archive/backup.tar.gz` |
 
 **边界情况**：
 
@@ -139,7 +139,7 @@
 
 ### 4.2 AVFS → SMB 路径（`toNative`）
 
-上述算法的反向操作。
+重建 UNC 路径：`\\{resource-base}\{file-path}`，file-path 中的分隔符还原为反斜杠。
 
 ---
 
@@ -164,7 +164,7 @@
 1. 从 URL 结构检测平台类型
 2. 提取各平台特有的组成部分（org、repo、project 等）
 3. 构建 `resource-base` 并保留各平台原生层级结构
-4. 如指定了分支/标签/提交则提取（→ `@version`）
+4. 如指定了分支/标签/提交则提取（→ `?ref=version` 查询参数）
 5. 将 `file-path` 设为仓库内部路径
 
 **GitHub 示例**：
@@ -172,31 +172,31 @@
 | Git 上下文 | AVFS 地址 |
 |-----------|-----------|
 | `github.com/avfs-io/core`（默认分支） | `avfs://git/github.com/avfs-io/core/readme.md` |
-| `github.com/avfs-io/core`，分支 `dev` | `avfs://git/github.com/avfs-io/core@dev/driver/smb.client` |
-| `github.com/avfs-io/core`，标签 `v1.0.0` | `avfs://git/github.com/avfs-io/core@v1.0.0/script/build.sh` |
-| `github.com/avfs-io/core`，提交 `9a27c1f` | `avfs://git/github.com/avfs-io/core@9a27c1f/module/kernel.so` |
+| `github.com/avfs-io/core`，分支 `dev` | `avfs://git/github.com/avfs-io/core/driver/smb.client?ref=dev` |
+| `github.com/avfs-io/core`，标签 `v1.0.0` | `avfs://git/github.com/avfs-io/core/script/build.sh?ref=v1.0.0` |
+| `github.com/avfs-io/core`，提交 `9a27c1f` | `avfs://git/github.com/avfs-io/core/module/kernel.so?ref=9a27c1f` |
 
 **Azure DevOps 示例**：
 
 | Git 上下文 | AVFS 地址 |
 |-----------|-----------|
-| Azure DevOps, org=`team`, project=`org`, repo=`service`, branch=`main` | `avfs://git/dev.azure.com/team/org/_git/service@main/src/entry.jar` |
-| Azure DevOps, repo=`platform`, branch=`hotfix` | `avfs://git/dev.azure.com/team/org/_git/platform@hotfix/util/check.dll` |
+| Azure DevOps, org=`team`, project=`org`, repo=`service`, branch=`main` | `avfs://git/dev.azure.com/team/org/_git/service/src/entry.jar?ref=main` |
+| Azure DevOps, repo=`platform`, branch=`hotfix` | `avfs://git/dev.azure.com/team/org/_git/platform/util/check.dll?ref=hotfix` |
 
 **自托管 / Bitbucket 示例**：
 
 | Git 上下文 | AVFS 地址 |
 |-----------|-----------|
-| 自托管 Git, branch=`release` | `avfs://git/git.company.internal/ai/group/engine@release/doc/design.vsdx` |
-| Bitbucket, branch=`main` | `avfs://git/bitbucket.org/team/avfs-runtime@main/conf/env.ini` |
+| 自托管 Git, branch=`release` | `avfs://git/git.company.internal/ai/group/engine/doc/design.vsdx?ref=release` |
+| Bitbucket, branch=`main` | `avfs://git/bitbucket.org/team/avfs-runtime/conf/env.ini?ref=main` |
 
 **版本锁定语义**：
 
 | 版本类型 | 锁定行为 |
 |---------|---------|
-| 分支（如 `@main`、`@dev`） | 浮动的——始终指向该分支的最新提交 |
-| 标签（如 `@v1.0.0`） | 不可变的——始终解析到同一个提交 |
-| 提交哈希（如 `@9a27c1f`） | 不可变的——精确定位到特定修订版 |
+| 分支（如 `?ref=main`、`?ref=dev`） | 浮动的——始终指向该分支的最新提交 |
+| 标签（如 `?ref=v1.0.0`） | 不可变的——始终解析到同一个提交 |
+| 提交哈希（如 `?ref=9a27c1f`） | 不可变的——精确定位到特定修订版 |
 
 ### 5.2 AVFS → Git URL（`toNative`）
 
@@ -257,25 +257,7 @@ registerConverter(ossConverter);
 
 ## 7. 转换 API 参考
 
-### 7.1 编程调用
-
-```typescript
-import { convertToAvfs, convertToNative } from '@avfs/core';
-
-// 原生 → AVFS
-const addr = convertToAVfs('/home/user/file.txt');
-// → ParsedAddress { protocol: 'file', resourceBase: '', filePath: 'home/user/file.txt' }
-
-// AVFS → 原生
-const path = convertToNative('avfs://git/github.com/owner/repo@main/src/index.ts');
-// → 平台相关的 git 引用字符串
-
-// 带选项
-const opts = { normalize: true, validate: true };
-const addr2 = convertToAVfs(nativePath, opts);
-```
-
-### 7.2 CLI 使用
+### 7.1 CLI 使用
 
 ```bash
 # 原生 → AVFS
@@ -283,17 +265,6 @@ avfs convert /home/user/config.json --to-avfs
 # 输出: avfs://file/home/user/config.json
 
 # AVFS → 原生
-avfs convert "avfs://git/github.com/avfs-io/core@v1.0.0/readme.md" --to-native
-# 输出: github.com/avfs-io/core (at tag v1.0.0), path: readme.md
-```
-
-### 7.3 批量转换
-
-```bash
-# 从文件转换多个路径
-avfs convert --batch input-paths.txt --to-avfs --output converted-addrs.txt
-
-# stdin 管道支持
-cat urls.txt | avfs convert --from-format url --to-avfs
-echo "avfs://file/data.bin" | avfs convert --to-native
+avfs convert "avfs://git/github.com/avfs-io/core/readme.md?ref=v1.0.0" --to-native
+# 输出: {"cloneUrl":"https://github.com/avfs-io/core.git","version":"v1.0.0","filePath":"readme.md"}
 ```

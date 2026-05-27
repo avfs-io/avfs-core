@@ -24,7 +24,7 @@ Use this skill whenever:
 The `avfs` CLI must be installed on the host system. If not available, install via:
 
 ```bash
-# Via npm (requires Node.js >= 18)
+# Via npm (requires Node.js >= 20)
 npm install -g @avfs/avfs-cli
 
 # Via install script
@@ -47,14 +47,14 @@ avfs --version
 Every AVFS address follows this structure:
 
 ```
-avfs://<proto>/<resource-base>[@<version>]/<file-path>[#anchor]
+avfs://<proto>/<resource-base>[/<file-path>][?ref=<version>][#anchor]
 ```
 
 | Field | Required | Description |
 |-------|----------|-------------|
 | `proto` | Yes | Access protocol: `file`, `http`, `https`, `smb`, `git`, or custom |
 | `resource-base` | Yes | Host / disk / repository identifier (vendor-native structure) |
-| `@version` | No | Git version: branch, tag, or commit hash (only valid for `git`) |
+| `?ref=<version>` | No | Git version: branch, tag, or commit hash as query parameter (only valid for `git`) |
 | `file-path` | Yes | Path to the file within the resource |
 | `#anchor` | No | Line number (`#L42`) or named section anchor |
 
@@ -66,7 +66,7 @@ avfs://<proto>/<resource-base>[@<version>]/<file-path>[#anchor]
 | `http` | Unencrypted HTTP | `avfs://http/192.168.1.100:8080/data.csv` |
 | `https` | Secure HTTPS | `avfs://https/cdn.example.com/package.zip` |
 | `smb` | SMB/CIFS LAN share | `avfs://smb/192.168.1.60/share/report.xlsx` |
-| `git` | Git repositories (GitHub, GitLab, Azure DevOps, Bitbucket, self-hosted) | `avfs://git/github.com/avfs-io/core@main/readme.md` |
+| `git` | Git repositories (GitHub, GitLab, Azure DevOps, Bitbucket, self-hosted) | `avfs://git/github.com/avfs-io/core/readme.md?ref=main` |
 
 ---
 
@@ -81,20 +81,19 @@ When you see an `avfs://` address, recognize it as an AVFS resource and parse it
 avfs stat <avfs-address>
 ```
 
-`avfs stat` outputs parsed metadata:
+`avfs stat` outputs parsed address components as JSON:
 - Protocol type (`file`, `http`, `https`, `smb`, `git`)
-- Resource base (host, repository, share)
-- Version (if present)
+- Resource base (host, repository identifier)
+- Version (if present, from `?ref=` query parameter)
 - File path within the resource
 - Anchor (if present)
-- File size, MIME type, last-modified timestamp
 
 **Interpretation rules**:
-- `avfs://file/...` → Local file. `resource-base` is the disk mount path.
+- `avfs://file/...` → Local file. `resource-base` is the disk mount path segment.
 - `avfs://http/...` or `avfs://https/...` → Web resource. `resource-base` is the host with optional port.
-- `avfs://smb/...` → LAN shared storage. `resource-base` is `{host}/{share}`.
+- `avfs://smb/...` → LAN shared storage. `resource-base` is `{host}` (host or IP only).
 - `avfs://git/...` → Git repository. `resource-base` is the vendor-specific full repo path.
-- If `@version` is present and protocol is `git`, resolve to the specified branch/tag/commit. For non-Git protocols, the `@version` field is ignored (no error).
+- If `?ref=` is present and protocol is `git`, resolve to the specified branch/tag/commit. For non-Git protocols, the `?ref=` parameter is ignored (no error).
 
 ---
 
@@ -127,17 +126,7 @@ avfs convert <avfs-address> --to-native
 | `avfs://file/home/user/doc.txt` | `/home/user/doc.txt` (Linux) / `C:\home\user\doc.txt` (Windows) |
 | `avfs://https/avfs.io/spec/standard.pdf` | `https://avfs.io/spec/standard.pdf` |
 | `avfs://smb/192.168.1.60/share/docs/report.xlsx` | `\\192.168.1.60\share\docs\report.xlsx` |
-| `avfs://git/github.com/avfs-io/core@v1.0.0/script/build.sh` | Clone URL `github.com/avfs-io/core` at tag `v1.0.0`, path `script/build.sh` |
-
-#### Batch Conversion
-
-```bash
-avfs convert --batch input-paths.txt --to-avfs --output converted-addrs.txt
-
-# Pipe through stdin/stdout
-cat urls.txt | avfs convert --from-format url --to-avfs
-echo "avfs://file/data.bin" | avfs convert --to-native
-```
+| `avfs://git/github.com/avfs-io/core/script/build.sh?ref=v1.0.0` | `{"cloneUrl":"https://github.com/avfs-io/core.git","version":"v1.0.0","filePath":"script/build.sh"}` |
 
 #### Conversion Principles
 
@@ -174,7 +163,7 @@ avfs fetch avfs://https/avfs.io/spec/standard.pdf -o standard.pdf
 avfs fetch avfs://smb/192.168.1.60/share/report.xlsx -o report.xlsx
 
 # Checkout a specific version from Git
-avfs fetch avfs://git/github.com/avfs-io/core@v1.0.0/readme.md -o readme.md
+avfs fetch avfs://git/github.com/avfs-io/core/readme.md?ref=v1.0.0 -o readme.md
 ```
 
 #### Fetch to stdout (pipe to other tools)
@@ -186,7 +175,7 @@ avfs fetch <avfs-address>
 When `-o` is omitted, content is written to stdout. This is ideal for piping into analysis tools:
 ```bash
 avfs fetch avfs://file/log/app.log | grep ERROR
-avfs fetch avfs://git/github.com/team/repo@main/api-spec.yaml | yq eval
+avfs fetch avfs://git/github.com/team/repo/api-spec.yaml?ref=main | yq eval
 ```
 
 #### Anchor-aware fetching
@@ -196,13 +185,13 @@ avfs fetch avfs://git/github.com/team/repo@main/api-spec.yaml | yq eval
 avfs fetch avfs://file/log/runtime.log#L120
 
 # Fetch only the section named "core-routing"
-avfs fetch avfs://git/github.com/avfs-io/spec@main/architecture.md#core-routing
+avfs fetch avfs://git/github.com/avfs-io/spec/architecture.md?ref=main#core-routing
 ```
 
 **When to fetch vs. convert:**
 - **Fetch** when you need the file's actual content (bytes)
 - **Convert** when you need to translate the address format itself
-- **Stat** when you only need metadata (size, type, timestamps) without downloading
+- **Stat** when you need to inspect the parsed address components without downloading
 
 ---
 
@@ -214,18 +203,12 @@ Inspect resource metadata without fetching the full content.
 avfs stat <avfs-address>
 ```
 
-This returns:
-- File size (bytes)
-- MIME type (determined by suffix + binary header sniffing)
-- Last modified timestamp
-- Protocol and parsed address components
-- Version info (for Git resources)
+This returns parsed address components as JSON: protocol, resourceBase, version, filePath, anchor.
 
 **Use this when**:
-- Checking if a resource exists before fetching
-- Determining file size before download
-- Verifying MIME type
 - Debugging address resolution
+- Verifying address syntax and field extraction
+- Checking version or anchor values in an AVFS URI
 
 ---
 
@@ -241,8 +224,8 @@ avfs validate <avfs-address>
 - Starts with `avfs://`
 - Contains exactly one protocol segment
 - Non-empty `resource-base` and `file-path`
-- At most one `@version` qualifier (non-empty if present)
-- At most one `#anchor` suffix
+- If `?ref=` present, value must be non-empty (git only)
+- At most one `#anchor` suffix (must appear at end)
 - Protocol characters are valid (`[a-zA-Z][a-zA-Z0-9._-]*`)
 
 **Return codes**: `0` for valid, non-zero for invalid.
@@ -283,7 +266,7 @@ avfs convert /home/user/docs/draft.md --to-avfs
 avfs fetch avfs://file/home/user/docs/draft.md -o /tmp/draft.md
 
 # Step 3: Fetch the policy from Git at a specific tag
-avfs fetch avfs://git/github.com/team/policy-repo@v2.0.0/policy.md -o /tmp/policy.md
+avfs fetch avfs://git/github.com/team/policy-repo/policy.md?ref=v2.0.0 -o /tmp/policy.md
 
 # Step 4: Compare (or process both with other tools)
 diff /tmp/draft.md /tmp/policy.md
@@ -314,10 +297,7 @@ avfs fetch $(cat stored-address.txt) -o important.xlsx
 ### Pattern 4: Batch processing multiple addresses
 
 ```bash
-# Convert a list of native paths to AVFS addresses
-avfs convert --batch native-paths.txt --to-avfs --output avfs-addresses.txt
-
-# Validate all addresses
+# Validate all addresses from a list
 while read -r addr; do
   echo "Validating: $addr"
   avfs validate "$addr"
@@ -328,8 +308,8 @@ done < avfs-addresses.txt
 
 ```bash
 # Compare the same file across two Git versions
-avfs fetch avfs://git/github.com/team/repo@main/changelog.md -o /tmp/changelog-main.md
-avfs fetch avfs://git/github.com/team/repo@v1.0.0/changelog.md -o /tmp/changelog-v1.md
+avfs fetch avfs://git/github.com/team/repo/changelog.md?ref=main -o /tmp/changelog-main.md
+avfs fetch avfs://git/github.com/team/repo/changelog.md?ref=v1.0.0 -o /tmp/changelog-v1.md
 diff /tmp/changelog-main.md /tmp/changelog-v1.md
 ```
 
@@ -341,19 +321,19 @@ diff /tmp/changelog-main.md /tmp/changelog-v1.md
 
 | Version Type | Behavior | Example |
 |-------------|----------|---------|
-| Branch (`@main`, `@dev`) | **Floating** — resolves to latest commit on that branch | `avfs://git/...@main/readme.md` |
-| Tag (`@v1.0.0`) | **Immutable** — always resolves to the same commit | `avfs://git/...@v1.0.0/script/build.sh` |
-| Commit hash (`@9a27c1f`) | **Immutable** — pinpoints exact revision | `avfs://git/...@9a27c1f/module/kernel.so` |
+| Branch (`?ref=main`, `?ref=dev`) | **Floating** — resolves to latest commit on that branch | `avfs://git/.../readme.md?ref=main` |
+| Tag (`?ref=v1.0.0`) | **Immutable** — always resolves to the same commit | `avfs://git/.../script/build.sh?ref=v1.0.0` |
+| Commit hash (`?ref=9a27c1f`) | **Immutable** — pinpoints exact revision | `avfs://git/.../module/kernel.so?ref=9a27c1f` |
 
 ### Supported Git Platforms
 
 | Platform | Native URL Pattern | AVFS Example |
 |----------|-------------------|-------------|
-| GitHub | `github.com/{owner}/{repo}` | `avfs://git/github.com/owner/repo@main/file.ts` |
-| GitLab | `gitlab.com/{group}/{project}` | `avfs://git/gitlab.com/group/project@main/file.ts` |
-| Azure DevOps | `dev.azure.com/{org}/{_git}/{repo}` | `avfs://git/dev.azure.com/org/project/_git/repo@main/file.ts` |
-| Bitbucket | `bitbucket.org/{workspace}/{repo}` | `avfs://git/bitbucket.org/workspace/repo@main/file.ts` |
-| Self-hosted | `{domain}/{path}/{repo}` | `avfs://git/git.company.internal/path/repo@main/file.ts` |
+| GitHub | `github.com/{owner}/{repo}` | `avfs://git/github.com/owner/repo/file.ts?ref=main` |
+| GitLab | `gitlab.com/{group}/{project}` | `avfs://git/gitlab.com/group/project/file.ts?ref=main` |
+| Azure DevOps | `dev.azure.com/{org}/{_git}/{repo}` | `avfs://git/dev.azure.com/org/project/_git/repo/file.ts?ref=main` |
+| Bitbucket | `bitbucket.org/{workspace}/{repo}` | `avfs://git/bitbucket.org/workspace/repo/file.ts?ref=main` |
+| Self-hosted | `{domain}/{path}/{repo}` | `avfs://git/git.company.internal/path/repo/file.ts?ref=main` |
 
 ---
 
@@ -407,7 +387,7 @@ SSH URL:     git@github.com:avfs-io/core.git → avfs://git/github.com/avfs-io/c
 | `Unsupported protocol: xyz` | Custom protocol driver not loaded | Run `avfs plugin load ./xyz-driver.so` |
 | `validate` returns non-zero | Syntax error in address | Check address format against the spec above |
 | `fetch` returns 404 | Resource path incorrect or unreachable | Verify with `avfs stat` first |
-| `Multiple @ symbols` | Ambiguous version qualifier | Only the first `@` is treated as version delimiter |
+| `Invalid AVFS address` | Syntax error in address | Check address format: `avfs://proto/resourceBase/filePath?ref=version#anchor` |
 | Git fetch fails | Auth credentials missing | Check `~/.avfs/config.toml` — guide user to add credentials (see below) |
 | `avfs stat` returns "protocol not found" | Data source not registered | Guide user to register the source via `avfs plugin load` or auth config |
 
@@ -490,15 +470,6 @@ The user should never see raw tool errors. Every failure is an opportunity to gu
 
 A core value of AVFS is that users do **not** need to restructure their files, create indexes, or follow special naming conventions for AI. Existing folders, URLs, and Git repos stay where they are. Once registered in AVFS, the Agent navigates them as-is. Do not ask the user to move files, rename directories, or create metadata files — AVFS eliminates that need.
 
-### Verbose Debugging
-
-Add `-v` (or `--verbose`) to any command for detailed diagnostic output:
-
-```bash
-avfs fetch avfs://git/github.com/team/repo@main/src/main.go -o main.go -v
-avfs stat avfs://smb/192.168.1.60/share/doc.pdf -v
-```
-
 ---
 
 ## Global Options Reference
@@ -508,12 +479,6 @@ avfs stat avfs://smb/192.168.1.60/share/doc.pdf -v
 | `--output` | `-o` | Set local output file path for `fetch` command |
 | `--to-avfs` | — | Convert native path/URL to AVFS format (`convert` command) |
 | `--to-native` | — | Convert AVFS address back to native format (`convert` command) |
-| `--verbose` | `-v` | Enable detailed debug logging |
-| `--quiet` | `-q` | Silent mode, suppress non-error output |
-| `--config` | `-c` | Specify custom config file path (`~/.avfs/config.toml` by default) |
-| `--no-color` | — | Disable colored output |
-| `--batch` | — | Batch process multiple addresses from file (`convert` command) |
-| `--from-format` | — | Specify input format for batch conversion (`convert` command) |
 
 ---
 
@@ -576,7 +541,7 @@ When a user provides a file reference, use this decision tree:
 
 3. **Do you need the content or just the address?**
    - Need content → `avfs fetch`
-   - Just need metadata → `avfs stat`
+   - Just need the parsed address → `avfs stat`
    - Just need the converted address → `avfs convert`
 
 ---

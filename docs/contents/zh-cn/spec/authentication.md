@@ -197,7 +197,7 @@ export AVFS_CRED_GIT_ALL_TOKEN="glpat-xxx"  # AVFS_CRED_<PROTO>_ALL_<KEY>
 Agent 可在请求时提供凭据，具有最高优先级：
 
 ```typescript
-const result = await avfs.read('avfs://git/github.com/team/repo@main/config.yaml', {
+const result = await avfs.read('avfs://git/github.com/team/repo/config.yaml?ref=main', {
   credentials: { token: 'ghp_one-time-token' }  // ← 覆盖所有其他来源
 });
 ```

@@ -116,9 +116,9 @@ All conversions follow these core principles:
 **SMB UNC Format**: `\\{host}\{share}\{path}`
 
 **Algorithm**:
-1. Parse host, share, and sub-path from UNC
-2. Build `resource-base`: `{host}/{share}`
-3. Set `file-path`: sub-path within share
+1. Parse host from UNC; normalize backslash separators to forward slashes
+2. Build `resource-base`: `{host}` (host or IP only)
+3. Set `file-path`: `{share}/{sub-path}` (share name is part of file-path)
 
 **Examples**:
 
@@ -139,7 +139,7 @@ All conversions follow these core principles:
 
 ### 4.2 AVFS → SMB Path (`toNative`)
 
-Reverse of above algorithm.
+Reconstructs UNC path: `\\{resource-base}\{file-path}` with backslash separators restored in file-path.
 
 ---
 
@@ -164,7 +164,7 @@ This is the most complex conversion due to vendor-specific URL structures.
 1. Detect vendor type from URL structure
 2. Extract vendor-specific components (org, repo, project, etc.)
 3. Build `resource-base` preserving vendor-native hierarchy
-4. Extract branch/tag/commit if specified (→ `@version`)
+4. Extract branch/tag/commit if specified (→ `?ref=version` query parameter)
 5. Set `file-path` to repository-internal path
 
 **GitHub Examples**:
@@ -172,31 +172,31 @@ This is the most complex conversion due to vendor-specific URL structures.
 | Git Context | AVFS Address |
 |-------------|-------------|
 | `github.com/avfs-io/core` (default branch) | `avfs://git/github.com/avfs-io/core/readme.md` |
-| `github.com/avfs-io/core`, branch `dev` | `avfs://git/github.com/avfs-io/core@dev/driver/smb.client` |
-| `github.com/avfs-io/core`, tag `v1.0.0` | `avfs://git/github.com/avfs-io/core@v1.0.0/script/build.sh` |
-| `github.com/avfs-io/core`, commit `9a27c1f` | `avfs://git/github.com/avfs-io/core@9a27c1f/module/kernel.so` |
+| `github.com/avfs-io/core`, branch `dev` | `avfs://git/github.com/avfs-io/core/driver/smb.client?ref=dev` |
+| `github.com/avfs-io/core`, tag `v1.0.0` | `avfs://git/github.com/avfs-io/core/script/build.sh?ref=v1.0.0` |
+| `github.com/avfs-io/core`, commit `9a27c1f` | `avfs://git/github.com/avfs-io/core/module/kernel.so?ref=9a27c1f` |
 
 **Azure DevOps Examples**:
 
 | Git Context | AVFS Address |
 |-------------|-------------|
-| Azure DevOps, org=`team`, project=`org`, repo=`service`, branch=`main` | `avfs://git/dev.azure.com/team/org/_git/service@main/src/entry.jar` |
-| Azure DevOps, repo=`platform`, branch=`hotfix` | `avfs://git/dev.azure.com/team/org/_git/platform@hotfix/util/check.dll` |
+| Azure DevOps, org=`team`, project=`org`, repo=`service`, branch=`main` | `avfs://git/dev.azure.com/team/org/_git/service/src/entry.jar?ref=main` |
+| Azure DevOps, repo=`platform`, branch=`hotfix` | `avfs://git/dev.azure.com/team/org/_git/platform/util/check.dll?ref=hotfix` |
 
 **Self-hosted / Bitbucket Examples**:
 
 | Git Context | AVFS Address |
 |-------------|-------------|
-| Self-hosted Git, branch=`release` | `avfs://git/git.company.internal/ai/group/engine@release/doc/design.vsdx` |
-| Bitbucket, branch=`main` | `avfs://git/bitbucket.org/team/avfs-runtime@main/conf/env.ini` |
+| Self-hosted Git, branch=`release` | `avfs://git/git.company.internal/ai/group/engine/doc/design.vsdx?ref=release` |
+| Bitbucket, branch=`main` | `avfs://git/bitbucket.org/team/avfs-runtime/conf/env.ini?ref=main` |
 
 **Version Lock Semantics**:
 
 | Version Type | Lock Behavior |
 |-------------|---------------|
-| Branch (e.g., `@main`, `@dev`) | Floating — always points to latest commit on that branch |
-| Tag (e.g., `@v1.0.0`) | Immutable — always resolves to the same commit |
-| Commit hash (e.g., `@9a27c1f`) | Immutable — pinpoints exact revision |
+| Branch (e.g., `?ref=main`, `?ref=dev`) | Floating — always points to latest commit on that branch |
+| Tag (e.g., `?ref=v1.0.0`) | Immutable — always resolves to the same commit |
+| Commit hash (e.g., `?ref=9a27c1f`) | Immutable — pinpoints exact revision |
 
 ### 5.2 AVFS → Git URL (`toNative`)
 
@@ -257,25 +257,7 @@ If no custom converter is registered for a protocol:
 
 ## 7. Conversion API Reference
 
-### 7.1 Programmatic Usage
-
-```typescript
-import { convertToAvfs, convertToNative } from '@avfs/core';
-
-// Native → AVFS
-const addr = convertToAVfs('/home/user/file.txt');
-// → ParsedAddress { protocol: 'file', resourceBase: '', filePath: 'home/user/file.txt' }
-
-// AVFS → Native
-const path = convertToNative('avfs://git/github.com/owner/repo@main/src/index.ts');
-// → Platform-specific git reference string
-
-// With options
-const opts = { normalize: true, validate: true };
-const addr2 = convertToAVfs(nativePath, opts);
-```
-
-### 7.2 CLI Usage
+### 7.1 CLI Usage
 
 ```bash
 # Native → AVFS
@@ -283,17 +265,6 @@ avfs convert /home/user/config.json --to-avfs
 # Output: avfs://file/home/user/config.json
 
 # AVFS → Native
-avfs convert "avfs://git/github.com/avfs-io/core@v1.0.0/readme.md" --to-native
-# Output: github.com/avfs-io/core (at tag v1.0.0), path: readme.md
-```
-
-### 7.3 Batch Conversion
-
-```bash
-# Convert multiple paths from file
-avfs convert --batch input-paths.txt --to-avfs --output converted-addrs.txt
-
-# stdin pipe support
-cat urls.txt | avfs convert --from-format url --to-avfs
-echo "avfs://file/data.bin" | avfs convert --to-native
+avfs convert "avfs://git/github.com/avfs-io/core/readme.md?ref=v1.0.0" --to-native
+# Output: {"cloneUrl":"https://github.com/avfs-io/core.git","version":"v1.0.0","filePath":"readme.md"}
 ```

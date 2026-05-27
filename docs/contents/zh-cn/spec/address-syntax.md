@@ -65,7 +65,7 @@ oss      → 自定义 OSS 驱动（用户定义）
 | `file` | 绝对或相对文件系统路径 | `/home/user/project` |
 | `http` | 主机名或 IP + 可选端口 | `192.168.1.100:8080` |
 | `https` | 完全限定域名 | `cdn.example.com` |
-| `smb` | SMB 主机 + 共享目录名 | `192.168.1.60/share/docs` |
+| `smb` | SMB 主机或 IP | `192.168.1.60` |
 | `git` | 完整仓库路径（平台特定） | `github.com/org/repo` |
 
 #### Git 平台特定 ResourceBase 格式

@@ -113,7 +113,7 @@ Upper business layer process, parse or persist file content
 ### 3.1 Standard Full Syntax
 
 ```
-avfs://<proto>/<resource-base>@<version>/<file-path>[#anchor]
+avfs://<proto>/<resource-base>[/<file-path>][?ref=<version>][#anchor]
 ```
 
 ### 3.2 Field Definition
@@ -122,16 +122,16 @@ avfs://<proto>/<resource-base>@<version>/<file-path>[#anchor]
 |-------|-----------|-------------|------------------|
 | `proto` | Yes | Resource access protocol identifier, bound with registered driver | All resources, support custom extension |
 | `resource-base` | Yes | Disk location, network host, complete original repository path, retain vendor native structure | All resources |
-| `@version` | No | Version mark: branch / tag / commit hash | Only valid for Git protocol, omitted otherwise |
+| `?ref=<version>` | No | Query parameter for version: branch / tag / commit hash | Only valid for Git protocol, omitted or ignored otherwise |
 | `file-path` | Yes | Inner directory file path, support standard relative path rule | All resources |
 | `#anchor` | No | Fine positioning mark: line number Lxx or section anchor | All resources |
 
 ### 3.3 Syntax Constraint Rules
 
-- Only single `@` symbol allowed in one address, exclusively used for Git version separation, no nested duplicate mark
-- Non-Git protocol automatically ignore version field, no parsing error
+- Version is specified via `?ref=` query parameter (e.g. `?ref=main`), not inline `@` syntax — eliminates ambiguity when branch names contain `/`
+- Non-Git protocol automatically ignore `?ref=` parameter, no parsing error
 - Relative path `./` and `../` keep unified resolution logic across all resources
-- Anchor mark only locates internal content, does not change original file resource path
+- Anchor mark must appear at the end of URI (after `?ref=` if present), per RFC 3986
 
 ---
 
@@ -177,23 +177,23 @@ Adapt irregular native path structure of each Git platform.
 
 ```
 avfs://git/github.com/avfs-io/core/readme.md
-avfs://git/github.com/avfs-io/core@dev/driver/smb.client
-avfs://git/github.com/avfs-io/core@v1.0.0/script/build.sh
-avfs://git/github.com/avfs-io/core@9a27c1f/module/kernel.so
+avfs://git/github.com/avfs-io/core/driver/smb.client?ref=dev
+avfs://git/github.com/avfs-io/core/script/build.sh?ref=v1.0.0
+avfs://git/github.com/avfs-io/core/module/kernel.so?ref=9a27c1f
 ```
 
 **Azure DevOps**
 
 ```
-avfs://git/dev.azure.com/team/org/_git/service@main/src/entry.jar
-avfs://git/dev.azure.com/team/org/_git/platform@hotfix/util/check.dll
+avfs://git/dev.azure.com/team/org/_git/service/src/entry.jar?ref=main
+avfs://git/dev.azure.com/team/org/_git/platform/util/check.dll?ref=hotfix
 ```
 
 **Self-hosted Git & Bitbucket**
 
 ```
-avfs://git/git.company.internal/ai/group/engine@release/doc/design.vsdx
-avfs://git/bitbucket.org/team/avfs-runtime@main/conf/env.ini
+avfs://git/git.company.internal/ai/group/engine/doc/design.vsdx?ref=release
+avfs://git/bitbucket.org/team/avfs-runtime/conf/env.ini?ref=main
 ```
 
 ### 4.6 Custom Extended Protocol
@@ -209,7 +209,7 @@ avfs://ftp/10.0.0.5/pub/package.iso
 
 ```
 avfs://file/log/runtime.log#L120
-avfs://git/github.com/avfs-io/spec@main/architecture.md#core-routing
+avfs://git/github.com/avfs-io/spec/architecture.md?ref=main#core-routing
 ```
 
 ---
@@ -279,21 +279,34 @@ avfs [command] [options] <avfs-address>
 #### 8.2.1 Fetch Resource
 
 ```bash
-avfs fetch <avfs-address> -o <local-save-path>
+avfs fetch <avfs-address> [-o <local-save-path>]
 ```
+
+When `-o` is omitted, content is streamed to stdout (pipe-friendly).
 
 #### 8.2.2 Address Conversion
 
 ```bash
-avfs convert [source-path] --to-avfs
-avfs convert [avfs-address] --to-native
+# Native → AVFS
+avfs convert <source-path> --to-avfs
+
+# AVFS → Native
+avfs convert <avfs-address> --to-native
 ```
 
-#### 8.2.3 Resource Metadata Inspection
+When neither `--to-avfs` nor `--to-native` is specified, direction is auto-detected:
+- Input starting with `avfs://` → `--to-native`
+- Other input → `--to-avfs`
+
+`--to-avfs` and `--to-native` are mutually exclusive.
+
+#### 8.2.3 Address Parsing
 
 ```bash
 avfs stat <avfs-address>
 ```
+
+Outputs parsed address components as JSON: protocol, resourceBase, version, filePath, anchor.
 
 #### 8.2.4 Plugin Management
 
@@ -309,13 +322,13 @@ avfs plugin unregister [proto-name]
 avfs validate <avfs-address>
 ```
 
+Outputs JSON with `valid` flag and optional `errors` array.
+
 ### 8.3 General Options
 
 | Option | Function |
 |--------|----------|
-| `-o, --output` | Specify local output saving path |
-| `-v, --verbose` | Output detailed running log |
-| `-q, --quiet` | Silent mode, minimize output |
+| `-o, --output` | Specify local output saving path (for `fetch` command) |
 
 ---
 

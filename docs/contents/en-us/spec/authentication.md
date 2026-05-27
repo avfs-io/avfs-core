@@ -197,7 +197,7 @@ export AVFS_CRED_GIT_ALL_TOKEN="glpat-xxx"  # AVFS_CRED_<PROTO>_ALL_<KEY>
 Agents may supply credentials at request time, which take the highest priority:
 
 ```typescript
-const result = await avfs.read('avfs://git/github.com/team/repo@main/config.yaml', {
+const result = await avfs.read('avfs://git/github.com/team/repo/config.yaml?ref=main', {
   credentials: { token: 'ghp_one-time-token' }  // ← overrides all other sources
 });
 ```

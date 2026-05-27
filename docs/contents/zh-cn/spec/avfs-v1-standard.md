@@ -113,7 +113,7 @@ AVFS 标准地址解析器
 ### 3.1 标准完整语法
 
 ```
-avfs://<proto>/<资源基础>@<版本>/<文件路径>[#锚点]
+avfs://<proto>/<资源基础>[/<文件路径>][?ref=<版本>][#锚点]
 ```
 
 ### 3.2 字段定义
@@ -122,16 +122,16 @@ avfs://<proto>/<资源基础>@<版本>/<文件路径>[#锚点]
 |------|------|------|----------|
 | `proto` | 是 | 资源访问协议标识符，与已注册的驱动绑定 | 所有资源，支持自定义扩展 |
 | `resource-base` | 是 | 磁盘位置、网络主机、完整原始仓库路径，保留各平台原生结构 | 所有资源 |
-| `@version` | 否 | 版本标记：分支 / 标签 / 提交哈希 | 仅对 Git 协议有效，其他协议省略 |
+| `?ref=<version>` | 否 | 查询参数形式的版本标记：分支 / 标签 / 提交哈希 | 仅对 Git 协议有效，其他协议省略或忽略 |
 | `file-path` | 是 | 内部目录文件路径，支持标准相对路径规则 | 所有资源 |
 | `#anchor` | 否 | 精细定位标记：行号 Lxx 或段落锚点 | 所有资源 |
 
 ### 3.3 语法约束规则
 
-- 单个地址中仅允许单个 `@` 符号，专用于 Git 版本分隔，不允许嵌套重复标记
-- 非 Git 协议自动忽略 version 字段，不会产生解析错误
+- 版本通过 `?ref=` 查询参数指定（如 `?ref=main`），不再使用内联 `@` 语法——从根本上消除了分支名中包含 `/` 的歧义问题
+- 非 Git 协议自动忽略 `?ref=` 参数，不会产生解析错误
 - 相对路径 `./` 和 `../` 在所有资源中保持统一的解析逻辑
-- 锚点标记仅用于内部内容定位，不改变原始文件资源路径
+- 锚点必须出现在 URI 末尾（如有 `?ref=` 则在其之后），遵循 RFC 3986
 
 ---
 
@@ -177,23 +177,23 @@ avfs://smb/office.host/public/media/demo.mp4
 
 ```
 avfs://git/github.com/avfs-io/core/readme.md
-avfs://git/github.com/avfs-io/core@dev/driver/smb.client
-avfs://git/github.com/avfs-io/core@v1.0.0/script/build.sh
-avfs://git/github.com/avfs-io/core@9a27c1f/module/kernel.so
+avfs://git/github.com/avfs-io/core/driver/smb.client?ref=dev
+avfs://git/github.com/avfs-io/core/script/build.sh?ref=v1.0.0
+avfs://git/github.com/avfs-io/core/module/kernel.so?ref=9a27c1f
 ```
 
 **Azure DevOps**
 
 ```
-avfs://git/dev.azure.com/team/org/_git/service@main/src/entry.jar
-avfs://git/dev.azure.com/team/org/_git/platform@hotfix/util/check.dll
+avfs://git/dev.azure.com/team/org/_git/service/src/entry.jar?ref=main
+avfs://git/dev.azure.com/team/org/_git/platform/util/check.dll?ref=hotfix
 ```
 
 **自托管 Git 与 Bitbucket**
 
 ```
-avfs://git/git.company.internal/ai/group/engine@release/doc/design.vsdx
-avfs://git/bitbucket.org/team/avfs-runtime@main/conf/env.ini
+avfs://git/git.company.internal/ai/group/engine/doc/design.vsdx?ref=release
+avfs://git/bitbucket.org/team/avfs-runtime/conf/env.ini?ref=main
 ```
 
 ### 4.6 自定义扩展协议
@@ -209,7 +209,7 @@ avfs://ftp/10.0.0.5/pub/package.iso
 
 ```
 avfs://file/log/runtime.log#L120
-avfs://git/github.com/avfs-io/spec@main/architecture.md#core-routing
+avfs://git/github.com/avfs-io/spec/architecture.md?ref=main#core-routing
 ```
 
 ---
@@ -279,21 +279,34 @@ avfs [command] [options] <avfs-address>
 #### 8.2.1 获取资源
 
 ```bash
-avfs fetch <avfs-address> -o <本地保存路径>
+avfs fetch <avfs-address> [-o <本地保存路径>]
 ```
+
+不指定 `-o` 时，内容流式输出到 stdout（管道友好）。
 
 #### 8.2.2 地址转换
 
 ```bash
-avfs convert [源路径] --to-avfs
-avfs convert [avfs地址] --to-native
+# 原生 → AVFS
+avfs convert <源路径> --to-avfs
+
+# AVFS → 原生
+avfs convert <avfs地址> --to-native
 ```
 
-#### 8.2.3 资源元数据检查
+当未指定 `--to-avfs` 或 `--to-native` 时，自动检测转换方向：
+- 输入以 `avfs://` 开头 → `--to-native`
+- 其他输入 → `--to-avfs`
+
+`--to-avfs` 与 `--to-native` 互斥。
+
+#### 8.2.3 地址解析
 
 ```bash
 avfs stat <avfs-address>
 ```
+
+输出 JSON 格式的解析结果：protocol、resourceBase、version、filePath、anchor。
 
 #### 8.2.4 插件管理
 
@@ -309,13 +322,13 @@ avfs plugin unregister [协议名称]
 avfs validate <avfs-address>
 ```
 
+输出 JSON 格式，含 `valid` 标志和可选的 `errors` 数组。
+
 ### 8.3 通用选项
 
 | 选项 | 功能 |
 |------|------|
-| `-o, --output` | 指定本地输出保存路径 |
-| `-v, --verbose` | 输出详细运行日志 |
-| `-q, --quiet` | 静默模式，最小化输出 |
+| `-o, --output` | 指定本地输出保存路径（`fetch` 命令） |
 
 ---
 

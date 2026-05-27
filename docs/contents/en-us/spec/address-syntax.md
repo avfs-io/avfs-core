@@ -65,7 +65,7 @@ oss      → Custom OSS driver (user-defined)
 | `file` | Absolute or relative filesystem path | `/home/user/project` |
 | `http` | Hostname or IP with optional port | `192.168.1.100:8080` |
 | `https` | Fully qualified domain name | `cdn.example.com` |
-| `smb` | SMB host with share name | `192.168.1.60/share/docs` |
+| `smb` | SMB host or IP | `192.168.1.60` |
 | `git` | Complete repository path (platform-specific) | `github.com/org/repo` |
 
 #### Git Platform-Specific ResourceBase Formats

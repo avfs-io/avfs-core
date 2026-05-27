@@ -11,21 +11,23 @@ docs/
 ├── README.md                    # This file
 ├── contents/
 │   ├── en-us/
-│   │   └── spec/                # English specifications (6 files)
+│   │   └── spec/                # English specifications
 │   │       ├── README.md        # Index & examples
 │   │       ├── avfs-v1-standard.md
 │   │       ├── address-syntax.md
 │   │       ├── driver-interface.md
 │   │       ├── plugin-lifecycle.md
-│   │       └── conversion-rules.md
+│   │       ├── conversion-rules.md
+│   │       └── authentication.md
 │   └── zh-cn/
-│       └── spec/                # Chinese specifications (6 files)
+│       └── spec/                # Chinese specifications
 │           ├── README.md        # Index & examples
 │           ├── avfs-v1-standard.md
 │           ├── address-syntax.md
 │           ├── driver-interface.md
 │           ├── plugin-lifecycle.md
-│           └── conversion-rules.md
+│           ├── conversion-rules.md
+│           └── authentication.md
 ```
 
 ## Specifications (`contents/*/spec/`)
