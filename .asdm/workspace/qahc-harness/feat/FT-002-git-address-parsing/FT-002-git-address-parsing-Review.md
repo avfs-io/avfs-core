@@ -1,9 +1,9 @@
 # FT-002 Git 地址解析 — 功能验收报告
 
 > **依赖文档**: [PRD](./FT-002-git-address-parsing-PRD.md) | [Plan](./FT-002-git-address-parsing-Plan.md)
-> **验收时间**: 2026-06-14T00:37:00+08:00
+> **验收时间**: 2026-06-16T17:00:00+08:00
 > **验收结论**: ✅ 验收通过
-> **代码基线**: `0c7e4ddfb7782088256071b711bc439280e5aa81` → `acabf39b95e72ed21d1baffdce063930f5228458` | 20 commits | 52 files | +6045/-386
+> **代码基线**: `0c7e4ddfb7782088256071b711bc439280e5aa81` → `b8d39bd12715982376ea41716ad949e8a1a48860` | 22 commits | 53 files | +6787/-386
 
 ---
 
@@ -13,14 +13,13 @@
 
 | 检查项 | 状态 | 说明 |
 |--------|:----:|------|
-| 工作树清洁度 | ✅ | 仅 develop-log.json（开发日志更新）和 Review.md（本文件）为非提交变更，源码无未提交修改 |
+| 工作树清洁度 | ✅ | 工作区完全干净，无未提交变更 |
 | 分支一致性 | ✅ | HEAD 位于 `main` 分支 |
 
 **证据**：
 ```bash
 $ git status --porcelain
- M .asdm/workspace/qahc-harness/feat/FT-002-git-address-parsing/develop-log.json
-?? .asdm/workspace/qahc-harness/feat/FT-002-git-address-parsing/FT-002-git-address-parsing-Review.md
+# (空输出 — 工作区完全干净)
 ```
 
 ### 1.2 Commit 历史统计
@@ -28,10 +27,10 @@ $ git status --porcelain
 | 属性 | 值 |
 |------|-----|
 | Base Commit | `0c7e4ddfb7782088256071b711bc439280e5aa81` |
-| HEAD Commit | `acabf39b95e72ed21d1baffdce063930f5228458` |
-| Commit 总数 | **20 commits** |
+| HEAD Commit | `b8d39bd12715982376ea41716ad949e8a1a48860` |
+| Commit 总数 | **22 commits** |
 | 变更作者 | Lei Xu (leixu@leansoftx.com, leixu@leixu-ubu-sig-vm102) |
-| 开发时间跨度 | 2026-05-25 ~ 2026-05-27 (约 2 天) |
+| 开发时间跨度 | 2026-05-25 ~ 2026-06-16 (约 22 天，实际有效工时 ~10 小时) |
 
 **Commit 列表**：
 
@@ -51,15 +50,18 @@ $ git status --porcelain
 | 18 | `7c36fac6` | 2026-05-26 16:38 | chore: gitignore cli/coverage and node_modules |
 | 19 | `7df9fdf8` | 2026-05-26 16:40 | chore: bump CLI version to 0.0.4 |
 | 20 | `acabf39b` | 2026-05-27 04:20 | docs: align specification docs with FT-002 code implementation |
+| 21 | `de247d60` | 2026-06-16 14:29 | chore(git): add Qoder related directories to .gitignore |
+| 22 | `fb2b6625` | 2026-06-16 14:30 | chore(git): add GitHub related folder ignore rules |
+| 23 | `b8d39bd1` | 2026-06-16 14:42 | chore: FT-002 功能验收准备 + develop-log.json 格式修复 |
 
 ### 1.3 代码变更量
 
 | 维度 | 数值 |
 |------|------|
-| 新增行数 | **+6,045** |
+| 新增行数 | **+6,787** |
 | 删除行数 | **-386** |
-| 净增行数 | **+5,659** |
-| 变更文件数 | **52 files** |
+| 净增行数 | **+6,401** |
+| 变更文件数 | **53 files** |
 
 **主要变更模块分布**：
 
@@ -83,9 +85,10 @@ $ git status --porcelain
 | Phase 1 (Parser 核心) | 2026-05-25 16:13 | 2026-05-26 11:56 | ~20 小时 |
 | Phase 2 (Git 双向转换) | 2026-05-26 12:18 | 2026-05-26 14:04 | ~1.9 小时 |
 | Phase 3 (Git Driver + fetch) | 2026-05-26 14:10 | 2026-05-26 16:22 | ~2.1 小时 |
-| **总计** | 2026-05-25 16:13 | 2026-05-26 16:22 | **~24 小时** |
+| 验收准备 (格式修复 + Review) | 2026-06-14 12:00 | 2026-06-16 14:42 | ~3 小时 |
+| **总计** | 2026-05-25 16:13 | 2026-06-16 14:42 | **19 天 19 小时** |
 
-> **注**：实际有效工作时间约 **8-10 小时**（含 CI 修复与验证），开发效率高。
+> **注**：实际有效工作时间约 **8-10 小时**（含 CI 修复与验证 + 验收准备），开发效率高。
 
 ### 1.5 构建产物验证
 

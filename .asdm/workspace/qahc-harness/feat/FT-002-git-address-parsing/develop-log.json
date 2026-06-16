@@ -5,7 +5,11 @@
   "base_commit": "0c7e4ddfb7782088256071b711bc439280e5aa81",
   "current_phase": 3,
     "current_task": "3.3",
-    "last_updated": "2026-06-16T09:00:00+08:00",
+    "last_updated": "2026-06-16T17:00:00+08:00",
+    "feature_status": "completed",
+    "review_path": ".asdm/workspace/qahc-harness/feat/FT-002-git-address-parsing/FT-002-git-address-parsing-Review.md",
+    "review_conclusion": "pass",
+    "review_completion_rate": "100%",
   "tasks": {
     "1.1": {
       "name": "测试数据框架 + 核心类型定义",
