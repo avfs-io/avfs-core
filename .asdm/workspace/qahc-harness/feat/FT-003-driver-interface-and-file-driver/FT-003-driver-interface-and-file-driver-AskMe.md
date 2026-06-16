@@ -113,7 +113,7 @@ FT-002 完成后，CLI 已具备完整的地址解析能力，5 协议解析器�
 3. 标准化错误类型（如 `NotFoundError`、`PermissionError`）对 AI Agent 错误处理至关重要——Agent 需要根据错误类型（而非错误消息字符串匹配）做出不同响应
 4. 方法签名保持 `string` 参数避免引入 ParsedAddress 到驱动层的循环依赖问题
 
-**状态**：⏳ 待确认
+**状态**：✅ **Confirmed: Option C** -- User chose full implementation of documented AVFSDriver interface
 
 ---
 
@@ -272,7 +272,7 @@ FT-002 完成后，CLI 已具备完整的地址解析能力，5 协议解析器�
 
 | # | 决策 | 推荐方案 | 状态 |
 | --- | ------ | ---------- | ------ |
-| 1 | Driver 接口演进策略 | **B — 渐进演进**：补充元数据 + 标准化错误，保持简单方法签名 | ⏳ 待确认 |
+| 1 | Driver 接口演进策略 | **C — 一步到位**：完整 AVFSDriver 接口（元数据+生命周期+Connection+ParsedAddress+全部错误类型） | ✅ 已确认（Option C） |
 | 2 | File Driver 实现范围 | **A — read + stat** 最小可用交付 | ⏳ 待确认 |
 | 3 | avfs stat 行为 | **B — 渐进连接**：驱动可用→元数据，不可用→地址解析回退 | ⏳ 待确认 |
 | 4 | 错误类型标准化 | **B — 4 种核心错误类型**（NotFound/Permission/Timeout/Connection） | ⏳ 待确认 |
@@ -284,6 +284,10 @@ FT-002 完成后，CLI 已具备完整的地址解析能力，5 协议解析器�
 ## 回答记录
 
 > 以下由用户逐一回答后填写
+
+| 决策点 | 选择 | 时间戳 | 备注 |
+|:-----:|:-----:|:------:|:------|
+| DP1 | Option C（一步到位：完整 AVFSDriver 接口） | 2026-06-14T12:00:00Z | User selected full implementation over gradual evolution |
 
 ---
 
