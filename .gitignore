@@ -8,3 +8,6 @@
 # Test coverage reports (vitest output)
 cli/coverage/
 node_modules/
+
+# Qoder commands & rules
+.qoder/
