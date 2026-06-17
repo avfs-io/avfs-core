@@ -81,7 +81,7 @@ export class GitConverter implements ProtocolConverter {
    * Returns a structured result with cloneUrl, version, and filePath.
    *
    * Examples:
-   *   avfs://git/github.com/avfs-io/core@v1.0.0/path/file.ts
+   *   avfs://git/github.com/avfs-io/core/path/file.ts?ref=v1.0.0
    *     → { url: "https://github.com/avfs-io/core.git",
    *          metadata: { cloneUrl: "https://github.com/avfs-io/core.git",
    *                      version: "v1.0.0",

@@ -33,7 +33,7 @@ avfs [command] [options] <avfs-address>
 
 | Command | Alias | Description | Example |
 |---------|-------|-------------|---------|
-| `fetch` | `f` | Download resource to local disk | `avfs fetch avfs://git/github.com/avfs-io/core@main/readme.md -o readme.md` |
+| `fetch` | `f` | Download resource to local disk | `avfs fetch avfs://git/github.com/avfs-io/core/readme.md?ref=main -o readme.md` |
 | `convert` | `c` | Convert between native path/URL and AVFS address | `avfs convert "D:\work\app.bin" --to-avfs` |
 | `stat` | `s` | Inspect resource metadata | `avfs stat avfs://file/home/system/release/app.bin` |
 | `validate` | `v` | Check AVFS address syntax validity | `avfs validate avfs://smb/192.168.1.60/share/doc.pdf` |

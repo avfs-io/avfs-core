@@ -110,6 +110,8 @@ AVFS (Agent Virtual File System) 是一个通用跨存储寻址协议 — 为 AI
 | 规划中特性 | 0 |
 | 澄清中特性 | 0 |
 | 设计中特性 | 1 |
+| 实现中特性 | 0 |
+| 已实现特性 | 2 |
 
 ### 迭代里程碑
 
@@ -147,7 +149,7 @@ AVFS (Agent Virtual File System) 是一个通用跨存储寻址协议 — 为 AI
 | 编号 | 特性名称 | 优先级 | 状态 | 说明 |
 |:----:|----------|:------:|:----:|------|
 | FT-001 | [CLI 基础框架](./feat/FT-001-cli-foundation/FT-001-cli-foundation-Plan.md) | P1 | ✅ 已实现 | 搭建 CLI 基础骨架，Mock 全部子命令入口，实现 help/version，Driver 暂存 CLI 内，含 GitHub Actions CI/CD |
-| FT-002 | [Git 地址解析](./feat/FT-002-git-address-parsing/FT-002-git-address-parsing-Plan.md) | P1 | 🟡 实现中 | 全协议地址解析器 + Git 原生 URL 转换 + GitHub API Driver + validate/stat/convert/fetch 全激活 |
+| FT-002 | [Git 地址解析](./feat/FT-002-git-address-parsing/FT-002-git-address-parsing-Plan.md) | P1 | ✅ 已实现 | 全协议地址解析器 + Git 原生 URL 转换 + GitHub API Driver + validate/stat/convert/fetch 全激活 |
 | FT-003 | [Driver 接口标准化 + File 驱动实现](./feat/FT-003-driver-interface-and-file-driver/FT-003-driver-interface-and-file-driver-PRD.md) | P1 | 🟠 设计中 | 标准化 Driver 接口契约、实现 file 协议驱动（本地文件系统）、连接 avfs stat 到真实文件元数据 |
 
 ---

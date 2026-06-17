@@ -77,7 +77,7 @@ A user's notes are scattered across a local folder, a cloud drive, and a Git-bac
 
 ```
 avfs://smb/studio.shared/projects/redesign/mockup.fig
-avfs://git/github.com/team/product@v2.0/assets/mockup.fig
+avfs://git/github.com/team/product/assets/mockup.fig?ref=v2.0
 ```
 
 ### Compliance & Audit
@@ -91,14 +91,14 @@ A new hire asks "where is the architecture documentation?" The AI Agent automati
 ## Address Syntax
 
 ```
-avfs://<protocol>/<resource-base>[@<version>]/<file-path>[#anchor]
+avfs://<protocol>/<resource-base>[/<file-path>][?ref=<version>][#anchor]
 ```
 
 | Field | Purpose |
 |-------|---------|
 | `protocol` | Access method: `file`, `http`, `https`, `smb`, `git`, or custom |
 | `resource-base` | Host / disk / repository identifier |
-| `@version` | Git version: branch, tag, or commit hash (optional) |
+| `?ref=` | Git version: branch, tag, or commit hash (optional) |
 | `file-path` | Path to the file within the resource |
 | `#anchor` | Line number (`#L42`) or named section anchor |
 
@@ -116,8 +116,8 @@ avfs://smb/192.168.1.60/share/report.xlsx
 
 # Git repository (latest / branch / tag / commit)
 avfs://git/github.com/avfs-io/core/readme.md
-avfs://git/github.com/avfs-io/core@dev/src/main.go
-avfs://git/github.com/avfs-io/core@v1.0.0/script/build.sh
+avfs://git/github.com/avfs-io/core/src/main.go?ref=dev
+avfs://git/github.com/avfs-io/core/script/build.sh?ref=v1.0.0
 
 # Content anchor
 avfs://file/log/app.log#L120

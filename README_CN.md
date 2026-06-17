@@ -77,7 +77,7 @@ avfs://smb/fileserver.internal/datasets/q2-results.csv
 
 ```
 avfs://smb/studio.shared/projects/redesign/mockup.fig
-avfs://git/github.com/team/product@v2.0/assets/mockup.fig
+avfs://git/github.com/team/product/assets/mockup.fig?ref=v2.0
 ```
 
 ### 合规审计
@@ -91,14 +91,14 @@ avfs://git/github.com/team/product@v2.0/assets/mockup.fig
 ## 地址语法
 
 ```
-avfs://<协议>/<资源基址>[@<版本>]/<文件路径>[#锚点]
+avfs://<协议>/<资源基址>[/<文件路径>][?ref=<版本>][#锚点]
 ```
 
 | 字段 | 用途 |
 |------|------|
 | `协议` | 访问方式：`file`、`http`、`https`、`smb`、`git` 或自定义 |
 | `资源基址` | 主机 / 磁盘 / 仓库标识 |
-| `@版本` | Git 版本：分支、标签或提交哈希（可选） |
+| `?ref=` | Git 版本：分支、标签或提交哈希（可选） |
 | `文件路径` | 资源内的文件路径 |
 | `#锚点` | 行号（`#L42`）或命名段落锚点 |
 
@@ -116,8 +116,8 @@ avfs://smb/192.168.1.60/share/report.xlsx
 
 # Git 仓库（最新 / 分支 / 标签 / 提交）
 avfs://git/github.com/avfs-io/core/readme.md
-avfs://git/github.com/avfs-io/core@dev/src/main.go
-avfs://git/github.com/avfs-io/core@v1.0.0/script/build.sh
+avfs://git/github.com/avfs-io/core/src/main.go?ref=dev
+avfs://git/github.com/avfs-io/core/script/build.sh?ref=v1.0.0
 
 # 内容锚点
 avfs://file/log/app.log#L120
